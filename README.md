@@ -25,6 +25,7 @@ Simple tokenomics, elegant design and the production of token information has ca
 
 
 <p align="center">
+  <br /><br /><br />
   <img src="https://safemoon.net/public/img/spaceman.png" width="189" height="123">
  </p>
 
