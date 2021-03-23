@@ -6,7 +6,7 @@
   <b>SafeMoon Protocol</b>
   <br />
   <br />
-  <em>Safely to the Moon</em>
+  <em>"Safely to the Moon"</em>
   <br />
   <a href ="https://safemoon.net/" target="_blank">https://safemoon.net/</a>
  </p>
@@ -22,3 +22,9 @@ Simple tokenomics, elegant design and the production of token information has ca
 
 
 #safemoon join us on our journey safely to the moon!
+
+
+<p align="center">
+  <img src="https://safemoon.net/public/img/spaceman.png" width="189" height="123">
+ </p>
+
