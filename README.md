@@ -27,11 +27,9 @@ Simple tokenomics, elegant design and the production of token information has ca
 * **✔️ 100% community owned and driven - no rug is possible.**
 
 
-`#safemoon` join us on our journey safely to the moon!
-
-
 <p align="center">
   <br /><br /><br />
-  <img src="https://safemoon.net/public/img/spaceman.png" width="189" height="123">
+  <img src="https://safemoon.net/public/img/spaceman.png" width="245" height="259">
+  <br /><b>#safemoon</b> join us on our journey safely to the moon!
  </p>
 
