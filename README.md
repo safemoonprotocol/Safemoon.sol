@@ -1,7 +1,7 @@
 # Safemoon.sol
 
 <p align="center">
-  <img src="https://safemoon.net/public/img/519x141.png">
+  <img src="https://safemoon.net/public/img/LogoAnim.gif" width="162" height="162">
   <br />
   <b>SafeMoon Protocol</b>
   <br />
