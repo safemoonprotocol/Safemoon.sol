@@ -11,6 +11,12 @@
   <a href ="https://safemoon.net/" target="_blank">https://safemoon.net/</a>
  </p>
 
+# BSC Contract Address
+
+* **Always make sure you are using the right contract address !**
+* ➡️ `0x8076c74c5e3f5852037f31ff0093eeb8c8add8d3`
+
+
 # What is SafeMoon 🌚 ?
 
 SafeMoon Protocol is a mixture of `RFI tokenomics` with the added function of auto-liquidity generating protocol. A fork from `BEE` with some added benefits.
