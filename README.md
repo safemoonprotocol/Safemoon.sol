@@ -1,20 +1,26 @@
 # Safemoon.sol
 
 <p align="center">
-  <img src="https://safemoon.net/public/img/LogoAnim.gif" width="162" height="162">
-  <br />
-  <b>SafeMoon Protocol</b>
-  <br />
-  <br />
-  <em>"Safely to the Moon"</em>
-  <br />
-  <a href ="https://safemoon.net/" target="_blank">https://safemoon.net/</a>
+    <img src="https://safemoon.net/public/img/LogoAnim.gif" width="162" height="162">
+        <br />
+        <b>SafeMoon Protocol</b>
+        <br />
+        <br />
+        <em>"Safely to the Moon"</em>
+        <br />
+    <a href ="https://safemoon.net/" target="_blank">https://safemoon.net/</a>
  </p>
 
 # BSC Contract Address
 
 * **Always make sure you are using the right contract address !**
-* ➡️ `0x8076c74c5e3f5852037f31ff0093eeb8c8add8d3`
+* You can copy the address from here `0x8076c74c5e3f5852037f31ff0093eeb8c8add8d3`
+* Or you can scan the address qr code from below
+
+<p align="center">
+    <br />
+    <img src="https://i.imgur.com/HPLMnyv.gif" width="200" height="200">
+</p>
 
 
 # What is SafeMoon 🌚 ?
@@ -28,8 +34,7 @@ Simple tokenomics, elegant design and the production of token information has ca
 
 
 <p align="center">
-  <br /><br /><br />
-  <img src="https://safemoon.net/public/img/spaceman.png" width="245" height="259">
-  <br /><b>#safemoon</b> join us on our journey safely to the moon!
+    <br /><br /><br />
+    <img src="https://safemoon.net/public/img/spaceman.png" width="245" height="259">
+    <br /><b>#safemoon</b> join us on our journey safely to the moon!
  </p>
-
