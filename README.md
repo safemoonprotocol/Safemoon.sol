@@ -15,10 +15,9 @@
 
 * **Always make sure you are using the right contract address !**
 * You can copy the address from here `0x8076c74c5e3f5852037f31ff0093eeb8c8add8d3`
-* Or you can scan the address qr code from below
+* Or you can scan the address from the QR code below
 
 <p align="center">
-    <br />
     <img src="https://i.imgur.com/nltFc06.png" width="200" height="200">
 </p>
 
