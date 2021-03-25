@@ -19,7 +19,7 @@
 
 <p align="center">
     <br />
-    <img src="https://i.imgur.com/HPLMnyv.gif" width="200" height="200">
+    <img src="https://i.imgur.com/nltFc06.png" width="200" height="200">
 </p>
 
 
