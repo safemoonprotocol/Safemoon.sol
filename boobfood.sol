@@ -21,7 +21,7 @@
 
  */
 
-pragma solidity ^0.6.12;
+pragma solidity ^0.8.4;
 // SPDX-License-Identifier: Unlicensed
 interface IERC20 {
 
@@ -423,7 +423,7 @@ contract Ownable is Context {
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
      */
-    constructor () internal {
+    constructor () {
         address msgSender = _msgSender();
         _owner = msgSender;
         emit OwnershipTransferred(address(0), msgSender);
@@ -701,7 +701,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
 }
 
 
-contract SafeMoon is Context, IERC20, Ownable {
+contract BoobMoon is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -715,12 +715,14 @@ contract SafeMoon is Context, IERC20, Ownable {
     address[] private _excluded;
    
     uint256 private constant MAX = ~uint256(0);
+    // TODO: change the total supply
     uint256 private _tTotal = 1000000000 * 10**6 * 10**9;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
-    string private _name = "SafeMoon";
-    string private _symbol = "SAFEMOON";
+    string private _name = "BoobFood";
+    string private _symbol = "HBM";
+    // TODO Change the decimals
     uint8 private _decimals = 9;
     
     uint256 public _taxFee = 5;
@@ -735,6 +737,7 @@ contract SafeMoon is Context, IERC20, Ownable {
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
     
+    // TODO: change the max txn amount
     uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
     uint256 private numTokensSellToAddToLiquidity = 500000 * 10**6 * 10**9;
     
@@ -752,7 +755,7 @@ contract SafeMoon is Context, IERC20, Ownable {
         inSwapAndLiquify = false;
     }
     
-    constructor () public {
+    constructor () {
         _rOwned[_msgSender()] = _rTotal;
         
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
@@ -1159,8 +1162,4 @@ contract SafeMoon is Context, IERC20, Ownable {
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
-
-
-    
-
 }
