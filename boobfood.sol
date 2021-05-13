@@ -722,6 +722,7 @@ contract BoobMoon is Context, IERC20, Ownable {
     // TODO Change the decimals
     uint8 private _decimals = 9;
     
+    // redistribution fee
     uint256 public _taxFee = 1;
     uint256 private _previousTaxFee = _taxFee;
     
@@ -734,14 +735,7 @@ contract BoobMoon is Context, IERC20, Ownable {
     uint256 public _marketingFee = 1;
     uint256 private _previousMarketingFee = _marketingFee;
 
-    uint256 public _hbmFee = 1;
-    uint256 private _previousHbmFee = _hbmFee;
-
-    uint256 public _redistributedFee = 1;
-    uint256 private _previousRedistributedFee = _redistributedFee;
-
     address private _charity;
-    address[] public _hbm;
     address public _marketing;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
@@ -773,8 +767,6 @@ contract BoobMoon is Context, IERC20, Ownable {
         // _charity = 0xf;
         // TODO: add the charity address here
         // _marketing = 0xf;
-        // TODO: add addresses for hbm
-        // _hbm = [0xf, 0xf];
 
         _rOwned[_msgSender()] = _rTotal;
         
@@ -856,7 +848,7 @@ contract BoobMoon is Context, IERC20, Ownable {
     function deliver(uint256 tAmount) public {
         address sender = _msgSender();
         require(!_isExcluded[sender], "Excluded addresses cannot call this function");
-        (uint256 rAmount,,,,,,,,) = _getValues(tAmount);
+        (uint256 rAmount,,,,,,,) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rTotal = _rTotal.sub(rAmount);
         _tFeeTotal = _tFeeTotal.add(tAmount);
@@ -865,10 +857,10 @@ contract BoobMoon is Context, IERC20, Ownable {
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
         require(tAmount <= _tTotal, "Amount must be less than supply");
         if (!deductTransferFee) {
-            (uint256 rAmount,,,,,,,,) = _getValues(tAmount);
+            (uint256 rAmount,,,,,,,) = _getValues(tAmount);
             return rAmount;
         } else {
-            (,uint256 rTransferAmount,,,,,,,) = _getValues(tAmount);
+            (,uint256 rTransferAmount,,,,,,) = _getValues(tAmount);
             return rTransferAmount;
         }
     }
@@ -903,7 +895,7 @@ contract BoobMoon is Context, IERC20, Ownable {
     }
 
     function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint256 tHBM) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
@@ -911,7 +903,6 @@ contract BoobMoon is Context, IERC20, Ownable {
         _takeLiquidity(tLiquidity);
         _sendToCharity(tCharity, sender);
         _sendToMarketing(tMarketing, sender);
-        _sendToHBM(tHBM, sender);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
@@ -951,10 +942,6 @@ contract BoobMoon is Context, IERC20, Ownable {
         _marketingFee = markeingFee;
     }
 
-    function setHBMFeePercent(uint256 hbmFee) external onlyOwner() {
-        _hbmFee = hbmFee;
-    }
-
      //to recieve ETH from uniswapV2Router when swaping
     receive() external payable {}
 
@@ -963,30 +950,28 @@ contract BoobMoon is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tFee);
     }
 
-    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
-        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint256 tHBM) = _getTValues(tAmount);
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tCharity, tMarketing, tHBM, _getRate());
-        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity, tCharity, tMarketing, tHBM);
+    function _getValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256) {
+        (uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing) = _getTValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee) = _getRValues(tAmount, tFee, tLiquidity, tCharity, tMarketing, _getRate());
+        return (rAmount, rTransferAmount, rFee, tTransferAmount, tFee, tLiquidity, tCharity, tMarketing);
     }
 
-    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
+    function _getTValues(uint256 tAmount) private view returns (uint256, uint256, uint256, uint256, uint256) {
         uint256 tFee = calculateTaxFee(tAmount);
         uint256 tLiquidity = calculateLiquidityFee(tAmount);
         uint256 tCharity = calculateCharityFee(tAmount);
         uint256 tMarketing = calculateMarketingFee(tAmount);
-        uint256 tHBM = calculateHBMFee(tAmount);
-        uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity).sub(tCharity).sub(tMarketing).sub(tHBM);
-        return (tTransferAmount, tFee, tLiquidity, tCharity, tMarketing, tHBM);
+        uint256 tTransferAmount = tAmount.sub(tFee).sub(tLiquidity).sub(tCharity).sub(tMarketing);
+        return (tTransferAmount, tFee, tLiquidity, tCharity, tMarketing);
     }
 
-    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint256 tHBM, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
+    function _getRValues(uint256 tAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint256 currentRate) private pure returns (uint256, uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
         uint256 rFee = tFee.mul(currentRate);
         uint256 rLiquidity = tLiquidity.mul(currentRate);
         uint256 rCharity = tCharity.mul(currentRate);
         uint256 rMarketing = tMarketing.mul(currentRate);
-        uint256 rHBM = tHBM.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity).sub(rCharity).sub(rMarketing).sub(rHBM);
+        uint256 rTransferAmount = rAmount.sub(rFee).sub(rLiquidity).sub(rCharity).sub(rMarketing);
         return (rAmount, rTransferAmount, rFee);
     }
 
@@ -1030,16 +1015,6 @@ contract BoobMoon is Context, IERC20, Ownable {
         _tOwned[_marketing] = _tOwned[_marketing].add(tMarketing);
         emit Transfer(sender, _marketing, tMarketing);
     }
-
-    function _sendToHBM(uint256 tHBM, address sender) private {
-        uint256 currentRate =  _getRate();
-        uint256 rHBM = tHBM.mul(currentRate).div(_hbm.length);
-        for (uint256 index = 0; index < _hbm.length; index++) {
-            _rOwned[_hbm[index]] = _rOwned[_hbm[index]].add(rHBM);
-            _tOwned[_hbm[index]] = _tOwned[_hbm[index]].add(tHBM);
-            emit Transfer(sender, _marketing, tHBM);
-        }
-    }
     
     function calculateTaxFee(uint256 _amount) private view returns (uint256) {
         return _amount.mul(_taxFee).div(
@@ -1065,12 +1040,6 @@ contract BoobMoon is Context, IERC20, Ownable {
         );
     }
 
-    function calculateHBMFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_hbmFee).div(
-            10**2
-        );
-    }
-    
     function removeAllFee() private {
         if(_taxFee == 0 && _liquidityFee == 0 && _charityFee == 0 && _marketingFee == 0) return;
         
@@ -1228,39 +1197,36 @@ contract BoobMoon is Context, IERC20, Ownable {
     }
 
     function _transferStandard(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint tHBM) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
         _takeLiquidity(tLiquidity);
         _sendToCharity(tCharity, sender);
         _sendToMarketing(tMarketing, sender);
-        _sendToHBM(tHBM, sender);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
     function _transferToExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint tHBM) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing) = _getValues(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);           
         _takeLiquidity(tLiquidity);
         _sendToCharity(tCharity, sender);
         _sendToMarketing(tMarketing, sender);
-        _sendToHBM(tHBM, sender);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
 
     function _transferFromExcluded(address sender, address recipient, uint256 tAmount) private {
-        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing, uint tHBM) = _getValues(tAmount);
+        (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity, uint256 tCharity, uint256 tMarketing) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);   
         _takeLiquidity(tLiquidity);
         _sendToCharity(tCharity, sender);
         _sendToMarketing(tMarketing, sender);
-        _sendToHBM(tHBM, sender);
         _reflectFee(rFee, tFee);
         emit Transfer(sender, recipient, tTransferAmount);
     }
