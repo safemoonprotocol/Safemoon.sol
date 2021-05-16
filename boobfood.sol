@@ -4,7 +4,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.4;
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -476,7 +476,7 @@ interface IUniswapV2Factory {
         returns (address pair);
 }
 
-contract CoinToken is Context, IERC20 {
+contract TestlinnToken is Context, IERC20 {
     using SafeMath for uint256;
     using Address for address;
     bool inSwapAndLiquify;
@@ -490,12 +490,12 @@ contract CoinToken is Context, IERC20 {
     mapping(address => bool) private _isCharity;
     address[] private _excluded;
 
-    string private _NAME = "BOOBFOOD";
-    string private _SYMBOL = "BOOBFOOD";
+    string private _NAME = "TESTLINN";
+    string private _SYMBOL = "TESTLINN";
     uint256 private _DECIMALS = 3;
-    address public MarketingAddress =
+    address private MarketingAddress =
         0xe3da8b11C6e48344Af109537F1f6aDa6576e2363;
-    address public CharityAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
+    address private CharityAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
 
     IUniswapV2Router public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
@@ -521,10 +521,10 @@ contract CoinToken is Context, IERC20 {
     uint256 private _tCharityTotal;
     uint256 private _tMarketingTotal;
 
-    uint256 public _REFLECTION_FEE = 150;
-    uint256 public _LIQUIDITY_FEE = 100;
-    uint256 public _CHARITY_FEE = 200;
-    uint256 public _MARKETING_FEE = 50;
+    uint256 private _REFLECTION_FEE = 150;
+    uint256 private _LIQUIDITY_FEE = 100;
+    uint256 private _CHARITY_FEE = 200;
+    uint256 private _MARKETING_FEE = 50;
 
     // Track original fees to bypass fees for charity account
     uint256 private ORIG_REFLECTION_FEE;
@@ -555,7 +555,7 @@ contract CoinToken is Context, IERC20 {
         _rOwned[tokenOwner] = _rTotal;
 
         IUniswapV2Router _uniswapV2Router =
-            IUniswapV2Router(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+            IUniswapV2Router(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F); //Pancake Swap's address
         // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
             .createPair(address(this), _uniswapV2Router.wETH());
@@ -664,23 +664,15 @@ contract CoinToken is Context, IERC20 {
         return _isExcluded[account];
     }
 
-    function isCharity(address account) public view returns (bool) {
+    function isCharity(address account) private view returns (bool) {
         return _isCharity[account];
-    }
-
-    function totalFees() public view returns (uint256) {
-        return _tReflectionTotal;
-    }
-
-    function totalBurn() public view returns (uint256) {
-        return _rOwned[address(0)];
     }
 
     function totalCharity() public view returns (uint256) {
         return _tCharityTotal;
     }
 
-    function totalMarketing() public view returns (uint256) {
+    function totalMarketing() private view returns (uint256) {
         return _tMarketingTotal;
     }
 
@@ -897,10 +889,6 @@ contract CoinToken is Context, IERC20 {
             values.rTransferAmount
         );
         _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
-        /*
-        _sendToCharity(values.tCharity, sender);
-        _sendToMarketing(values.tMarketing, sender);
-        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -942,10 +930,6 @@ contract CoinToken is Context, IERC20 {
             values.rTransferAmount
         );
         _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
-        /*
-        _sendToCharity(values.tCharity, sender);
-        _sendToMarketing(values.tMarketing, sender);
-        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -989,10 +973,6 @@ contract CoinToken is Context, IERC20 {
             values.rTransferAmount
         );
         _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
-        /*
-        _sendToCharity(values.tCharity, sender);
-        _sendToMarketing(values.tMarketing, sender);
-        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1037,10 +1017,6 @@ contract CoinToken is Context, IERC20 {
             values.rTransferAmount
         );
         _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
-        /*
-        _sendToCharity(values.tCharity, sender);
-        _sendToMarketing(values.tMarketing, sender);
-        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1105,7 +1081,6 @@ contract CoinToken is Context, IERC20 {
         {
             tAmount1 = tAmount;
         }
-        //(uint256 tReflection, uint256 tLiquidity, uint256 tCharity, uint tMarketing) = _getTBasics(tAmount, _REFLECTION_FEE, _LIQUIDITY_FEE, _CHARITY_FEE, _MARKETING_FEE);
         TBasics memory tb =
             _getTBasics(
                 tAmount,
@@ -1247,14 +1222,6 @@ contract CoinToken is Context, IERC20 {
         _tOwned[MarketingAddress] = _tOwned[MarketingAddress].add(tMarketing);
         emit Transfer(sender, CharityAddress, tMarketing);
     }
-
-    /* function _sendToMarketing(uint256 tMarketing, address sender) private {
-        uint256 currentRate = _getRate();
-        
-        _rOwned[MarketingAddress] = _rOwned[MarketingAddress].add(rMarketing);
-        _tOwned[MarketingAddress] = _tOwned[MarketingAddress].add(tMarketing);
-        emit Transfer(sender, CharityAddress, tMarketing);
-    }*/
 
     function removeAllFee() private {
         if (_REFLECTION_FEE == 0 && _LIQUIDITY_FEE == 0 && _CHARITY_FEE == 0)
