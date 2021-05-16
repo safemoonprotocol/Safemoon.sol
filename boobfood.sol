@@ -823,9 +823,9 @@ interface IUniswapV2Factory {
         external
         returns (address pair);
 
-    function setFeeTo(address) external;
+    function setReflectionTo(address) external;
 
-    function setFeeToSetter(address) external;
+    function setReflectionToSetter(address) external;
 }
 
 contract CoinToken is Context, IERC20, Ownable {
@@ -870,19 +870,19 @@ contract CoinToken is Context, IERC20, Ownable {
     uint256 private _tTotal;
     uint256 private _rTotal;
 
-    uint256 private _tFeeTotal;
-    uint256 private _tBurnTotal;
+    uint256 private _tReflectionTotal;
+    uint256 private _tLiquidityTotal;
     uint256 private _tCharityTotal;
     uint256 private _tMarketingTotal;
 
-    uint256 public _TAX_FEE;
-    uint256 public _BURN_FEE;
+    uint256 public _REFLECTION_FEE;
+    uint256 public _LIQUIDITY_FEE;
     uint256 public _CHARITY_FEE;
     uint256 public _MARKETING_FEE;
 
     // Track original fees to bypass fees for charity account
-    uint256 private ORIG_TAX_FEE;
-    uint256 private ORIG_BURN_FEE;
+    uint256 private ORIG_REFLECTION_FEE;
+    uint256 private ORIG_LIQUIDITY_FEE;
     uint256 private ORIG_CHARITY_FEE;
     uint256 private ORIG_MARKETING_FEE;
 
@@ -898,8 +898,8 @@ contract CoinToken is Context, IERC20, Ownable {
     string private _symbol = "BOOBFOOD";
     uint256 private _decimals = 3;
     uint256 private _supply = 10000000000;
-    uint256 private _txFee = 1;
-    uint256 private _burnFee = 1;
+    uint256 private _reflectionFee = 1;
+    uint256 private _liquidityFee = 1;
     uint256 private _charityFee = 1;
     uint256 private _marketingFee = 1;
     address private _FeeAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
@@ -913,12 +913,12 @@ contract CoinToken is Context, IERC20, Ownable {
         _DECIMALFACTOR = 10**uint256(_DECIMALS);
         _tTotal = _supply * _DECIMALFACTOR;
         _rTotal = (_MAX - (_MAX % _tTotal));
-        _TAX_FEE = _txFee * 100;
-        _BURN_FEE = _burnFee * 100;
+        _REFLECTION_FEE = _reflectionFee * 100;
+        _LIQUIDITY_FEE = _liquidityFee * 100;
         _CHARITY_FEE = _charityFee * 100;
         _MARKETING_FEE = _marketingFee * 100;
-        ORIG_TAX_FEE = _TAX_FEE;
-        ORIG_BURN_FEE = _BURN_FEE;
+        ORIG_REFLECTION_FEE = _REFLECTION_FEE;
+        ORIG_LIQUIDITY_FEE = _LIQUIDITY_FEE;
         ORIG_CHARITY_FEE = _CHARITY_FEE;
         ORIG_MARKETING_FEE = _MARKETING_FEE;
         _isCharity[_FeeAddress] = true;
@@ -1042,11 +1042,11 @@ contract CoinToken is Context, IERC20, Ownable {
     }
 
     function totalFees() public view returns (uint256) {
-        return _tFeeTotal;
+        return _tReflectionTotal;
     }
 
     function totalBurn() public view returns (uint256) {
-        return _tBurnTotal;
+        return _rOwned[address(0)];
     }
 
     function totalCharity() public view returns (uint256) {
@@ -1067,7 +1067,7 @@ contract CoinToken is Context, IERC20, Ownable {
         uint256 rAmount = values.rAmount;
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
         _rTotal = _rTotal.sub(rAmount);
-        _tFeeTotal = _tFeeTotal.add(tAmount);
+        _tReflectionTotal = _tReflectionTotal.add(tAmount);
     }
 
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee)
@@ -1137,18 +1137,18 @@ contract CoinToken is Context, IERC20, Ownable {
     *
     *
     *function updateFee(
-    *    uint256 _txFee,
-    *    uint256 _burnFee,
+    *    uint256 _reflectionFee,
+    *    uint256 _liquidityFee,
     *    uint256 _charityFee,
     *    uint256 _marketingFee
     *) public onlyOwner() {
-    *    _TAX_FEE = _txFee * 100;
-    *    _BURN_FEE = _burnFee * 100;
+    *    _REFLECTION_FEE = _reflectionFee * 100;
+    *    _LIQUIDITY_FEE = _liquidityFee * 100;
     *    _CHARITY_FEE = _charityFee * 100;
     *    _MARKETING_FEE = _marketingFee * 100;
 
-    *    ORIG_TAX_FEE = _TAX_FEE;
-    *    ORIG_BURN_FEE = _BURN_FEE;
+    *    ORIG_REFLECTION_FEE = _REFLECTION_FEE;
+    *    ORIG_LIQUIDITY_FEE = _LIQUIDITY_FEE;
     *    ORIG_CHARITY_FEE = _CHARITY_FEE;
     *    ORIG_MARKETING_FEE = _MARKETING_FEE;
     *}
@@ -1307,7 +1307,7 @@ contract CoinToken is Context, IERC20, Ownable {
     ) private {
         uint256 currentRate = _getRate();
         Values memory values = _getValues(tAmount);
-        uint256 rBurn = values.tBurn.mul(currentRate);
+        uint256 rLiquidity = values.tLiquidity.mul(currentRate);
         uint256 rCharity = values.tCharity.mul(currentRate);
         uint256 rMarketing = values.tMarketing.mul(currentRate);
         _standardTransferContent(
@@ -1318,12 +1318,12 @@ contract CoinToken is Context, IERC20, Ownable {
         );
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
-        _reflectFee(
+        _reflectReflection(
             values.rFee,
-            rBurn,
+            rLiquidity,
             rCharity,
-            values.tFee,
-            values.tBurn,
+            values.tReflection,
+            values.tLiquidity,
             values.tCharity,
             values.tMarketing,
             rMarketing
@@ -1348,7 +1348,7 @@ contract CoinToken is Context, IERC20, Ownable {
     ) private {
         uint256 currentRate = _getRate();
         Values memory values = _getValues(tAmount);
-        uint256 rBurn = values.tBurn.mul(currentRate);
+        uint256 rLiquidity = values.tLiquidity.mul(currentRate);
         uint256 rCharity = values.tCharity.mul(currentRate);
         uint256 rMarketing = values.tMarketing.mul(currentRate);
         _excludedFromTransferContent(
@@ -1360,12 +1360,12 @@ contract CoinToken is Context, IERC20, Ownable {
         );
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
-        _reflectFee(
+        _reflectReflection(
             values.rFee,
-            rBurn,
+            rLiquidity,
             rCharity,
-            values.tFee,
-            values.tBurn,
+            values.tReflection,
+            values.tLiquidity,
             values.tCharity,
             values.tMarketing,
             rMarketing
@@ -1392,7 +1392,7 @@ contract CoinToken is Context, IERC20, Ownable {
     ) private {
         uint256 currentRate = _getRate();
         Values memory values = _getValues(tAmount);
-        uint256 rBurn = values.tBurn.mul(currentRate);
+        uint256 rLiquidity = values.tLiquidity.mul(currentRate);
         uint256 rCharity = values.tCharity.mul(currentRate);
         uint256 rMarketing = values.tMarketing.mul(currentRate);
         _excludedToTransferContent(
@@ -1404,12 +1404,12 @@ contract CoinToken is Context, IERC20, Ownable {
         );
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
-        _reflectFee(
+        _reflectReflection(
             values.rFee,
-            rBurn,
+            rLiquidity,
             rCharity,
-            values.tFee,
-            values.tBurn,
+            values.tReflection,
+            values.tLiquidity,
             values.tCharity,
             values.tMarketing,
             rMarketing
@@ -1436,7 +1436,7 @@ contract CoinToken is Context, IERC20, Ownable {
     ) private {
         uint256 currentRate = _getRate();
         Values memory values = _getValues(tAmount);
-        uint256 rBurn = values.tBurn.mul(currentRate);
+        uint256 rLiquidity = values.tLiquidity.mul(currentRate);
         uint256 rCharity = values.tCharity.mul(currentRate);
         uint256 rMarketing = values.tMarketing.mul(currentRate);
         _bothTransferContent(
@@ -1449,12 +1449,12 @@ contract CoinToken is Context, IERC20, Ownable {
         );
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
-        _reflectFee(
+        _reflectReflection(
             values.rFee,
-            rBurn,
+            rLiquidity,
             rCharity,
-            values.tFee,
-            values.tBurn,
+            values.tReflection,
+            values.tLiquidity,
             values.tCharity,
             values.tMarketing,
             rMarketing
@@ -1476,23 +1476,25 @@ contract CoinToken is Context, IERC20, Ownable {
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
     }
 
-    function _reflectFee(
+    function _reflectReflection(
         uint256 rFee,
-        uint256 rBurn,
+        uint256 rLiquidity,
         uint256 rCharity,
-        uint256 tFee,
-        uint256 tBurn,
+        uint256 tReflection,
+        uint256 tLiquidity,
         uint256 tCharity,
         uint256 tMarketing,
         uint256 rMarketing
     ) private {
-        _rTotal = _rTotal.sub(rFee).sub(rBurn).sub(rCharity).sub(rMarketing);
-        _tFeeTotal = _tFeeTotal.add(tFee);
-        _tBurnTotal = _tBurnTotal.add(tBurn);
+        _rTotal = _rTotal.sub(rFee).sub(rLiquidity).sub(rCharity).sub(
+            rMarketing
+        );
+        _tReflectionTotal = _tReflectionTotal.add(tReflection);
+        _tLiquidityTotal = _tLiquidityTotal.add(tLiquidity);
         _tCharityTotal = _tCharityTotal.add(tCharity);
         _tMarketingTotal = _tMarketingTotal.add(tMarketing);
-        _tTotal = _tTotal.sub(tBurn);
-        emit Transfer(address(this), address(0), tBurn);
+        _tTotal = _tTotal.sub(tLiquidity);
+        emit Transfer(address(this), address(0), tLiquidity);
     }
 
     struct Values {
@@ -1500,8 +1502,8 @@ contract CoinToken is Context, IERC20, Ownable {
         uint256 rTransferAmount;
         uint256 rFee;
         uint256 tTransferAmount;
-        uint256 tFee;
-        uint256 tBurn;
+        uint256 tReflection;
+        uint256 tLiquidity;
         uint256 tCharity;
         uint256 tMarketing;
     }
@@ -1511,31 +1513,31 @@ contract CoinToken is Context, IERC20, Ownable {
         {
             tAmount1 = tAmount;
         }
-        //(uint256 tFee, uint256 tBurn, uint256 tCharity, uint tMarketing) = _getTBasics(tAmount, _TAX_FEE, _BURN_FEE, _CHARITY_FEE, _MARKETING_FEE);
+        //(uint256 tReflection, uint256 tLiquidity, uint256 tCharity, uint tMarketing) = _getTBasics(tAmount, _REFLECTION_FEE, _LIQUIDITY_FEE, _CHARITY_FEE, _MARKETING_FEE);
         TBasics memory tb =
             _getTBasics(
                 tAmount,
-                _TAX_FEE,
-                _BURN_FEE,
+                _REFLECTION_FEE,
+                _LIQUIDITY_FEE,
                 _CHARITY_FEE,
                 _MARKETING_FEE
             );
         uint256 tTransferAmount =
             getTTransferAmount(
                 tAmount,
-                tb.tFee,
-                tb.tBurn,
+                tb.tReflection,
+                tb.tLiquidity,
                 tb.tCharity,
                 tb.tMarketing
             );
         uint256 currentRate = _getRate();
         (uint256 rAmount, uint256 rFee) =
-            _getRBasics(tAmount1, tb.tFee, currentRate);
+            _getRBasics(tAmount1, tb.tReflection, currentRate);
         uint256 rTransferAmount =
             _getRTransferAmount(
                 rAmount,
                 rFee,
-                tb.tBurn,
+                tb.tLiquidity,
                 tb.tCharity,
                 tb.tMarketing,
                 currentRate
@@ -1546,8 +1548,8 @@ contract CoinToken is Context, IERC20, Ownable {
                 rTransferAmount,
                 rFee,
                 tTransferAmount,
-                tb.tFee,
-                tb.tBurn,
+                tb.tReflection,
+                tb.tLiquidity,
                 tb.tCharity,
                 tb.tMarketing
             );
@@ -1555,60 +1557,66 @@ contract CoinToken is Context, IERC20, Ownable {
     }
 
     struct TBasics {
-        uint256 tFee;
-        uint256 tBurn;
+        uint256 tReflection;
+        uint256 tLiquidity;
         uint256 tCharity;
         uint256 tMarketing;
     }
 
     function _getTBasics(
         uint256 tAmount,
-        uint256 taxFee,
-        uint256 burnFee,
+        uint256 reflectionFee,
+        uint256 liquidityFee,
         uint256 charityFee,
         uint256 marketingFee
     ) private view returns (TBasics memory) {
-        uint256 tFee = ((tAmount.mul(taxFee)).div(_GRANULARITY)).div(100);
-        uint256 tBurn = ((tAmount.mul(burnFee)).div(_GRANULARITY)).div(100);
+        uint256 tReflection =
+            ((tAmount.mul(reflectionFee)).div(_GRANULARITY)).div(100);
+        uint256 tLiquidity =
+            ((tAmount.mul(liquidityFee)).div(_GRANULARITY)).div(100);
         uint256 tCharity =
             ((tAmount.mul(charityFee)).div(_GRANULARITY)).div(100);
         uint256 tMarketing =
             ((tAmount.mul(marketingFee)).div(_GRANULARITY)).div(100);
-        TBasics memory tb = TBasics(tFee, tBurn, tCharity, tMarketing);
+        TBasics memory tb =
+            TBasics(tReflection, tLiquidity, tCharity, tMarketing);
         return tb;
     }
 
     function getTTransferAmount(
         uint256 tAmount,
-        uint256 tFee,
-        uint256 tBurn,
+        uint256 tReflection,
+        uint256 tLiquidity,
         uint256 tCharity,
         uint256 tMarketing
     ) private pure returns (uint256) {
-        return tAmount.sub(tFee).sub(tBurn).sub(tCharity).sub(tMarketing);
+        return
+            tAmount.sub(tReflection).sub(tLiquidity).sub(tCharity).sub(
+                tMarketing
+            );
     }
 
     function _getRBasics(
         uint256 tAmount,
-        uint256 tFee,
+        uint256 tReflection,
         uint256 currentRate
     ) private pure returns (uint256, uint256) {
         uint256 rAmount = tAmount.mul(currentRate);
-        uint256 rFee = tFee.mul(currentRate);
+        uint256 rFee = tReflection.mul(currentRate);
         return (rAmount, rFee);
     }
 
     function _getRTransferAmount(
         uint256 rAmount,
         uint256 rFee,
-        uint256 tBurn,
+        uint256 tLiquidity,
         uint256 tCharity,
         uint256 tMarketing,
         uint256 currentRate
     ) private pure returns (uint256) {
-        uint256 rBurn = tBurn.mul(currentRate);
+        uint256 rLiquidity = tLiquidity.mul(currentRate);
         uint256 rCharity = tCharity.mul(currentRate);
-        uint256 temp = rAmount.sub(rFee).sub(rBurn).sub(rCharity);
+        uint256 temp = rAmount.sub(rFee).sub(rLiquidity).sub(rCharity);
         return temp.sub(tMarketing);
     }
 
@@ -1649,24 +1657,25 @@ contract CoinToken is Context, IERC20, Ownable {
     }
 
     function removeAllFee() private {
-        if (_TAX_FEE == 0 && _BURN_FEE == 0 && _CHARITY_FEE == 0) return;
+        if (_REFLECTION_FEE == 0 && _LIQUIDITY_FEE == 0 && _CHARITY_FEE == 0)
+            return;
 
-        ORIG_TAX_FEE = _TAX_FEE;
-        ORIG_BURN_FEE = _BURN_FEE;
+        ORIG_REFLECTION_FEE = _REFLECTION_FEE;
+        ORIG_LIQUIDITY_FEE = _LIQUIDITY_FEE;
         ORIG_CHARITY_FEE = _CHARITY_FEE;
 
-        _TAX_FEE = 0;
-        _BURN_FEE = 0;
+        _REFLECTION_FEE = 0;
+        _LIQUIDITY_FEE = 0;
         _CHARITY_FEE = 0;
     }
 
     function restoreAllFee() private {
-        _TAX_FEE = ORIG_TAX_FEE;
-        _BURN_FEE = ORIG_BURN_FEE;
+        _REFLECTION_FEE = ORIG_REFLECTION_FEE;
+        _LIQUIDITY_FEE = ORIG_LIQUIDITY_FEE;
         _CHARITY_FEE = ORIG_CHARITY_FEE;
     }
 
-    function _getTaxFee() private view returns (uint256) {
-        return _TAX_FEE;
+    function _getreflectionFee() private view returns (uint256) {
+        return _REFLECTION_FEE;
     }
 }
