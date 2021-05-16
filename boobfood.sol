@@ -1161,11 +1161,15 @@ contract CoinToken is Context, IERC20, Ownable {
         emit Transfer(_who, address(0), _value);
     }
 
-    function mint(address account, uint256 amount) public onlyOwner() {
-        _tTotal = _tTotal.add(amount);
-        _rOwned[account] = _rOwned[account].add(amount);
-        emit Transfer(address(0), account, amount);
-    }
+    /*
+     * @Dev removes the possibility of minting new tokens, locking in the supply.
+     *
+     *function mint(address account, uint256 amount) public onlyOwner() {
+     *    _tTotal = _tTotal.add(amount);
+     *    _rOwned[account] = _rOwned[account].add(amount);
+     *    emit Transfer(address(0), account, amount);
+     *}
+     */
 
     function _approve(
         address owner,
