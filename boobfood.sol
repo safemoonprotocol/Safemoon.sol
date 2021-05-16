@@ -17,93 +17,6 @@ abstract contract Context {
     }
 }
 
-/**
- * @dev Interface of the BEP20 standard as defined in the EIP.
- */
-interface IBEP20 {
-    /**
-     * @dev Returns the amount of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the amount of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves `amount` tokens from the caller's account to `recipient`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `sender` to `recipient` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(
-        address indexed owner,
-        address indexed spender,
-        uint256 value
-    );
-}
-
 interface IERC20 {
     function totalSupply() external view returns (uint256);
 
@@ -314,43 +227,6 @@ library SafeMath {
 
         return c;
     }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
-    }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts with custom message when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(
-        uint256 a,
-        uint256 b,
-        string memory errorMessage
-    ) internal pure returns (uint256) {
-        require(b != 0, errorMessage);
-        return a % b;
-    }
 }
 
 /**
@@ -531,10 +407,10 @@ library Address {
     }
 }
 
-interface IUniswapV2Router01 {
+interface IUniswapV2Router {
     function factory() external pure returns (address);
 
-    function WETH() external pure returns (address);
+    function wETH() external pure returns (address);
 
     function addLiquidity(
         address tokenA,
@@ -569,128 +445,6 @@ interface IUniswapV2Router01 {
             uint256 liquidity
         );
 
-    function removeLiquidity(
-        address tokenA,
-        address tokenB,
-        uint256 liquidity,
-        uint256 amountAMin,
-        uint256 amountBMin,
-        address to,
-        uint256 deadline
-    ) external returns (uint256 amountA, uint256 amountB);
-
-    function removeLiquidityETH(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline
-    ) external returns (uint256 amountToken, uint256 amountETH);
-
-    function removeLiquidityWithPermit(
-        address tokenA,
-        address tokenB,
-        uint256 liquidity,
-        uint256 amountAMin,
-        uint256 amountBMin,
-        address to,
-        uint256 deadline,
-        bool approveMax,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external returns (uint256 amountA, uint256 amountB);
-
-    function removeLiquidityETHWithPermit(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline,
-        bool approveMax,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external returns (uint256 amountToken, uint256 amountETH);
-
-    function swapExactTokensForTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-
-    function swapTokensForExactTokens(
-        uint256 amountOut,
-        uint256 amountInMax,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-
-    function swapExactETHForTokens(
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable returns (uint256[] memory amounts);
-
-    function swapTokensForExactETH(
-        uint256 amountOut,
-        uint256 amountInMax,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-
-    function swapExactTokensForETH(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external returns (uint256[] memory amounts);
-
-    function swapETHForExactTokens(
-        uint256 amountOut,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable returns (uint256[] memory amounts);
-
-    function quote(
-        uint256 amountA,
-        uint256 reserveA,
-        uint256 reserveB
-    ) external pure returns (uint256 amountB);
-
-    function getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) external pure returns (uint256 amountOut);
-
-    function getAmountIn(
-        uint256 amountOut,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) external pure returns (uint256 amountIn);
-
-    function getAmountsOut(uint256 amountIn, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts);
-
-    function getAmountsIn(uint256 amountOut, address[] calldata path)
-        external
-        view
-        returns (uint256[] memory amounts);
-}
-
-interface IUniswapV2Router02 is IUniswapV2Router01 {
     function removeLiquidityETHSupportingFeeOnTransferTokens(
         address token,
         uint256 liquidity,
@@ -699,34 +453,6 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
         address to,
         uint256 deadline
     ) external returns (uint256 amountETH);
-
-    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
-        address token,
-        uint256 liquidity,
-        uint256 amountTokenMin,
-        uint256 amountETHMin,
-        address to,
-        uint256 deadline,
-        bool approveMax,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external returns (uint256 amountETH);
-
-    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
-        uint256 amountIn,
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external;
-
-    function swapExactETHForTokensSupportingFeeOnTransferTokens(
-        uint256 amountOutMin,
-        address[] calldata path,
-        address to,
-        uint256 deadline
-    ) external payable;
 
     function swapExactTokensForETHSupportingFeeOnTransferTokens(
         uint256 amountIn,
@@ -745,26 +471,9 @@ interface IUniswapV2Factory {
         uint256
     );
 
-    function feeTo() external view returns (address);
-
-    function feeToSetter() external view returns (address);
-
-    function getPair(address tokenA, address tokenB)
-        external
-        view
-        returns (address pair);
-
-    function allPairs(uint256) external view returns (address pair);
-
-    function allPairsLength() external view returns (uint256);
-
     function createPair(address tokenA, address tokenB)
         external
         returns (address pair);
-
-    function setReflectionTo(address) external;
-
-    function setReflectionToSetter(address) external;
 }
 
 contract CoinToken is Context, IERC20 {
@@ -781,13 +490,14 @@ contract CoinToken is Context, IERC20 {
     mapping(address => bool) private _isCharity;
     address[] private _excluded;
 
-    string private _NAME;
-    string private _SYMBOL;
-    uint256 private _DECIMALS;
-    address public FeeAddress;
-    address public MarketingAddress;
+    string private _NAME = "BOOBFOOD";
+    string private _SYMBOL = "BOOBFOOD";
+    uint256 private _DECIMALS = 3;
+    address public MarketingAddress =
+        0xe3da8b11C6e48344Af109537F1f6aDa6576e2363;
+    address public CharityAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
 
-    IUniswapV2Router02 public immutable uniswapV2Router;
+    IUniswapV2Router public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
     uint256 private numTokensSellToAddToLiquidity = 300000 * 10**3;
 
@@ -811,10 +521,10 @@ contract CoinToken is Context, IERC20 {
     uint256 private _tCharityTotal;
     uint256 private _tMarketingTotal;
 
-    uint256 public _REFLECTION_FEE;
-    uint256 public _LIQUIDITY_FEE;
-    uint256 public _CHARITY_FEE;
-    uint256 public _MARKETING_FEE;
+    uint256 public _REFLECTION_FEE = 150;
+    uint256 public _LIQUIDITY_FEE = 100;
+    uint256 public _CHARITY_FEE = 200;
+    uint256 public _MARKETING_FEE = 50;
 
     // Track original fees to bypass fees for charity account
     uint256 private ORIG_REFLECTION_FEE;
@@ -830,43 +540,25 @@ contract CoinToken is Context, IERC20 {
 
     /*HARD WIRED VALUES FOR BOOBFOOD CRYPTO*/
 
-    string private _name = "BOOBFOOD";
-    string private _symbol = "BOOBFOOD";
-    uint256 private _decimals = 3;
-    uint256 private _supply = 10000000000;
-    uint256 private _reflectionFee = 1;
-    uint256 private _liquidityFee = 1;
-    uint256 private _charityFee = 1;
-    uint256 private _marketingFee = 1;
-    address private _FeeAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
     address private tokenOwner = 0xccE481a31b885906dAd434Ea7FDC56849D492Ccb;
-    address private _marketing = 0xe3da8b11C6e48344Af109537F1f6aDa6576e2363;
 
     constructor() {
-        _NAME = _name;
-        _SYMBOL = _symbol;
-        _DECIMALS = _decimals;
         _DECIMALFACTOR = 10**uint256(_DECIMALS);
-        _tTotal = _supply * _DECIMALFACTOR;
+        _tTotal = 10000000000 * _DECIMALFACTOR;
         _rTotal = (_MAX - (_MAX % _tTotal));
-        _REFLECTION_FEE = _reflectionFee * 100;
-        _LIQUIDITY_FEE = _liquidityFee * 100;
-        _CHARITY_FEE = _charityFee * 100;
-        _MARKETING_FEE = _marketingFee * 100;
         ORIG_REFLECTION_FEE = _REFLECTION_FEE;
         ORIG_LIQUIDITY_FEE = _LIQUIDITY_FEE;
         ORIG_CHARITY_FEE = _CHARITY_FEE;
         ORIG_MARKETING_FEE = _MARKETING_FEE;
-        _isCharity[_FeeAddress] = true;
-        FeeAddress = _FeeAddress;
-        MarketingAddress = _marketing;
+
+        _isCharity[CharityAddress] = true;
         _rOwned[tokenOwner] = _rTotal;
 
-        IUniswapV2Router02 _uniswapV2Router =
-            IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+        IUniswapV2Router _uniswapV2Router =
+            IUniswapV2Router(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
         // Create a uniswap pair for this new token
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
-            .createPair(address(this), _uniswapV2Router.WETH());
+            .createPair(address(this), _uniswapV2Router.wETH());
 
         // set the rest of the contract variables
         uniswapV2Router = _uniswapV2Router;
@@ -1048,57 +740,9 @@ contract CoinToken is Context, IERC20 {
         _excluded.push(account);
     }
 
-    /*
-     * @Dev removes the possibility of changing excluded accounts, thus locking in transparency.
-     *function includeAccount(address account) () {
-     *    require(_isExcluded[account], "Account is already excluded");
-     *    for (uint256 i = 0; i < _excluded.length; i++) {
-     *        if (_excluded[i] == account) {
-     *            _excluded[i] = _excluded[_excluded.length - 1];
-     *            _tOwned[account] = 0;
-     *            _isExcluded[account] = false;
-     *            _excluded.pop();
-     *           break;
-     *        }
-     *   }
-     *}
-     */
-
-    /*
-     * @Dev removes the possibility of changing charity account, thus locking in transparency.
-     *
-     *
-     *    require(!_isCharity[account], "Account is already charity account");
-     *    _isCharity[account] = true;
-     *    FeeAddress = account;
-     *}
-     */
-
     function burn(uint256 _value) public {
         _burn(msg.sender, _value);
     }
-
-    /*
-    * @Dev removes the possibility of updating fees, thus locking in tokenomics.
-    *
-    *
-    *function updateFee(
-    *    uint256 _reflectionFee,
-    *    uint256 _liquidityFee,
-    *    uint256 _charityFee,
-    *    uint256 _marketingFee
-    *) public onlyOwner() {
-    *    _REFLECTION_FEE = _reflectionFee * 100;
-    *    _LIQUIDITY_FEE = _liquidityFee * 100;
-    *    _CHARITY_FEE = _charityFee * 100;
-    *    _MARKETING_FEE = _marketingFee * 100;
-
-    *    ORIG_REFLECTION_FEE = _REFLECTION_FEE;
-    *    ORIG_LIQUIDITY_FEE = _LIQUIDITY_FEE;
-    *    ORIG_CHARITY_FEE = _CHARITY_FEE;
-    *    ORIG_MARKETING_FEE = _MARKETING_FEE;
-    *}
-    */
 
     function _burn(address _who, uint256 _value) internal {
         require(_value <= _rOwned[_who]);
@@ -1106,16 +750,6 @@ contract CoinToken is Context, IERC20 {
         _tTotal = _tTotal.sub(_value);
         emit Transfer(_who, address(0), _value);
     }
-
-    /*
-     * @Dev removes the possibility of minting new tokens, locking in the supply.
-     *
-     *function mint(address account, uint256 amount) public onlyOwner() {
-     *    _tTotal = _tTotal.add(amount);
-     *    _rOwned[account] = _rOwned[account].add(amount);
-     *    emit Transfer(address(0), account, amount);
-     *}
-     */
 
     function _approve(
         address owner,
@@ -1217,7 +851,7 @@ contract CoinToken is Context, IERC20 {
         // generate the uniswap pair path of token -> weth
         address[] memory path = new address[](2);
         path[0] = address(this);
-        path[1] = uniswapV2Router.WETH();
+        path[1] = uniswapV2Router.wETH();
 
         _approve(address(this), address(uniswapV2Router), tokenAmount);
 
@@ -1262,8 +896,11 @@ contract CoinToken is Context, IERC20 {
             values.rAmount,
             values.rTransferAmount
         );
+        _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
+        /*
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
+        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1304,8 +941,11 @@ contract CoinToken is Context, IERC20 {
             values.rAmount,
             values.rTransferAmount
         );
+        _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
+        /*
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
+        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1348,8 +988,11 @@ contract CoinToken is Context, IERC20 {
             values.rAmount,
             values.rTransferAmount
         );
+        _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
+        /*
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
+        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1393,8 +1036,11 @@ contract CoinToken is Context, IERC20 {
             values.tTransferAmount,
             values.rTransferAmount
         );
+        _sendToCharityAndMarketing(values.tCharity, values.tMarketing, sender);
+        /*
         _sendToCharity(values.tCharity, sender);
         _sendToMarketing(values.tMarketing, sender);
+        */
         _reflectReflection(
             values.rFee,
             rLiquidity,
@@ -1586,21 +1232,29 @@ contract CoinToken is Context, IERC20 {
         return (rSupply, tSupply);
     }
 
-    function _sendToCharity(uint256 tCharity, address sender) private {
+    function _sendToCharityAndMarketing(
+        uint256 tCharity,
+        uint256 tMarketing,
+        address sender
+    ) private {
         uint256 currentRate = _getRate();
         uint256 rCharity = tCharity.mul(currentRate);
-        _rOwned[FeeAddress] = _rOwned[FeeAddress].add(rCharity);
-        _tOwned[FeeAddress] = _tOwned[FeeAddress].add(tCharity);
-        emit Transfer(sender, FeeAddress, tCharity);
-    }
-
-    function _sendToMarketing(uint256 tMarketing, address sender) private {
-        uint256 currentRate = _getRate();
         uint256 rMarketing = tMarketing.mul(currentRate);
+        _rOwned[CharityAddress] = _rOwned[CharityAddress].add(rCharity);
+        _tOwned[CharityAddress] = _tOwned[CharityAddress].add(tCharity);
+        emit Transfer(sender, CharityAddress, tCharity);
         _rOwned[MarketingAddress] = _rOwned[MarketingAddress].add(rMarketing);
         _tOwned[MarketingAddress] = _tOwned[MarketingAddress].add(tMarketing);
-        emit Transfer(sender, FeeAddress, tMarketing);
+        emit Transfer(sender, CharityAddress, tMarketing);
     }
+
+    /* function _sendToMarketing(uint256 tMarketing, address sender) private {
+        uint256 currentRate = _getRate();
+        
+        _rOwned[MarketingAddress] = _rOwned[MarketingAddress].add(rMarketing);
+        _tOwned[MarketingAddress] = _tOwned[MarketingAddress].add(tMarketing);
+        emit Transfer(sender, CharityAddress, tMarketing);
+    }*/
 
     function removeAllFee() private {
         if (_REFLECTION_FEE == 0 && _LIQUIDITY_FEE == 0 && _CHARITY_FEE == 0)
@@ -1620,11 +1274,4 @@ contract CoinToken is Context, IERC20 {
         _LIQUIDITY_FEE = ORIG_LIQUIDITY_FEE;
         _CHARITY_FEE = ORIG_CHARITY_FEE;
     }
-    /* @Dev
-     * Function is never called. Taking it out.
-     *
-     *function _getreflectionFee() private view returns (uint256) {
-     *    return _REFLECTION_FEE;
-     *}
-     */
 }
