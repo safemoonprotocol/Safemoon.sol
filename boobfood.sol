@@ -531,67 +531,6 @@ library Address {
     }
 }
 
-/**
- * @dev Contract module which provides a basic access control mechanism, where
- * there is an account (an owner) that can be granted exclusive access to
- * specific functions.
- *
- * By default, the owner account will be the one that deploys the contract. This
- * can later be changed with {transferOwnership}.
- *
- * This module is used through inheritance. It will make available the modifier
- * `onlyOwner`, which can be applied to your functions to restrict their use to
- * the owner.
- */
-contract Ownable is Context {
-    address public _owner;
-
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
-
-    /**
-     * @dev Returns the address of the current owner.
-     */
-    function owner() public view returns (address) {
-        return _owner;
-    }
-
-    /**
-     * @dev Throws if called by any account other than the owner.
-     */
-    modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
-        _;
-    }
-
-    /**
-     * @dev Leaves the contract without owner. It will not be possible to call
-     * `onlyOwner` functions anymore. Can only be called by the current owner.
-     *
-     * NOTE: Renouncing ownership will leave the contract without an owner,
-     * thereby removing any functionality that is only available to the owner.
-     */
-    function renounceOwnership() public virtual onlyOwner {
-        emit OwnershipTransferred(_owner, address(0));
-        _owner = address(0);
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-     */
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
-        emit OwnershipTransferred(_owner, newOwner);
-        _owner = newOwner;
-    }
-}
-
 interface IUniswapV2Router01 {
     function factory() external pure returns (address);
 
@@ -828,7 +767,7 @@ interface IUniswapV2Factory {
     function setReflectionToSetter(address) external;
 }
 
-contract CoinToken is Context, IERC20, Ownable {
+contract CoinToken is Context, IERC20 {
     using SafeMath for uint256;
     using Address for address;
     bool inSwapAndLiquify;
@@ -847,9 +786,6 @@ contract CoinToken is Context, IERC20, Ownable {
     uint256 private _DECIMALS;
     address public FeeAddress;
     address public MarketingAddress;
-
-    uint256 public _liquidityFee = 2;
-    uint256 private _previousLiquidityFee = _liquidityFee;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
@@ -924,7 +860,6 @@ contract CoinToken is Context, IERC20, Ownable {
         _isCharity[_FeeAddress] = true;
         FeeAddress = _FeeAddress;
         MarketingAddress = _marketing;
-        _owner = tokenOwner;
         _rOwned[tokenOwner] = _rTotal;
 
         IUniswapV2Router02 _uniswapV2Router =
@@ -1100,7 +1035,11 @@ contract CoinToken is Context, IERC20, Ownable {
         return rAmount.div(currentRate);
     }
 
-    function excludeAccount(address account) external onlyOwner() {
+    /*
+     * @Dev removes the possibility of changing excluded accounts, thus locking in transparency.
+     * Function gets changed from external to internal only. Will be called upon construction and never again.
+     */
+    function excludeAccount(address account) internal {
         require(!_isExcluded[account], "Account is already excluded");
         if (_rOwned[account] > 0) {
             _tOwned[account] = tokenFromReflection(_rOwned[account]);
@@ -1109,24 +1048,31 @@ contract CoinToken is Context, IERC20, Ownable {
         _excluded.push(account);
     }
 
-    function includeAccount(address account) external onlyOwner() {
-        require(_isExcluded[account], "Account is already excluded");
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_excluded[i] == account) {
-                _excluded[i] = _excluded[_excluded.length - 1];
-                _tOwned[account] = 0;
-                _isExcluded[account] = false;
-                _excluded.pop();
-                break;
-            }
-        }
-    }
+    /*
+     * @Dev removes the possibility of changing excluded accounts, thus locking in transparency.
+     *function includeAccount(address account) () {
+     *    require(_isExcluded[account], "Account is already excluded");
+     *    for (uint256 i = 0; i < _excluded.length; i++) {
+     *        if (_excluded[i] == account) {
+     *            _excluded[i] = _excluded[_excluded.length - 1];
+     *            _tOwned[account] = 0;
+     *            _isExcluded[account] = false;
+     *            _excluded.pop();
+     *           break;
+     *        }
+     *   }
+     *}
+     */
 
-    function setAsCharityAccount(address account) external onlyOwner() {
-        require(!_isCharity[account], "Account is already charity account");
-        _isCharity[account] = true;
-        FeeAddress = account;
-    }
+    /*
+     * @Dev removes the possibility of changing charity account, thus locking in transparency.
+     *
+     *
+     *    require(!_isCharity[account], "Account is already charity account");
+     *    _isCharity[account] = true;
+     *    FeeAddress = account;
+     *}
+     */
 
     function burn(uint256 _value) public {
         _burn(msg.sender, _value);
@@ -1295,7 +1241,7 @@ contract CoinToken is Context, IERC20, Ownable {
             tokenAmount,
             0, // slippage is unavoidable
             0, // slippage is unavoidable
-            owner(),
+            tokenOwner,
             block.timestamp
         );
     }
@@ -1674,8 +1620,11 @@ contract CoinToken is Context, IERC20, Ownable {
         _LIQUIDITY_FEE = ORIG_LIQUIDITY_FEE;
         _CHARITY_FEE = ORIG_CHARITY_FEE;
     }
-
-    function _getreflectionFee() private view returns (uint256) {
-        return _REFLECTION_FEE;
-    }
+    /* @Dev
+     * Function is never called. Taking it out.
+     *
+     *function _getreflectionFee() private view returns (uint256) {
+     *    return _REFLECTION_FEE;
+     *}
+     */
 }
