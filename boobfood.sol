@@ -892,19 +892,21 @@ contract CoinToken is Context, IERC20, Ownable {
         inSwapAndLiquify = false;
     }
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        uint256 _decimals,
-        uint256 _supply,
-        uint256 _txFee,
-        uint256 _burnFee,
-        uint256 _charityFee,
-        uint256 _marketingFee,
-        address _FeeAddress,
-        address tokenOwner,
-        address _marketing
-    ) {
+    /*HARD WIRED VALUES FOR BOOBFOOD CRYPTO*/
+
+    string private _name = "BOOBFOOD";
+    string private _symbol = "BOOBFOOD";
+    uint256 private _decimals = 3;
+    uint256 private _supply = 10000000000;
+    uint256 private _txFee = 1;
+    uint256 private _burnFee = 1;
+    uint256 private _charityFee = 1;
+    uint256 private _marketingFee = 1;
+    address private _FeeAddress = 0x6C6Ad0AB710D0BA84EC037c425b92452616e8270;
+    address private tokenOwner = 0xccE481a31b885906dAd434Ea7FDC56849D492Ccb;
+    address private _marketing = 0xe3da8b11C6e48344Af109537F1f6aDa6576e2363;
+
+    constructor() {
         _NAME = _name;
         _SYMBOL = _symbol;
         _DECIMALS = _decimals;
@@ -1130,22 +1132,27 @@ contract CoinToken is Context, IERC20, Ownable {
         _burn(msg.sender, _value);
     }
 
-    function updateFee(
-        uint256 _txFee,
-        uint256 _burnFee,
-        uint256 _charityFee,
-        uint256 _marketingFee
-    ) public onlyOwner() {
-        _TAX_FEE = _txFee * 100;
-        _BURN_FEE = _burnFee * 100;
-        _CHARITY_FEE = _charityFee * 100;
-        _MARKETING_FEE = _marketingFee * 100;
+    /*
+    * @Dev removes the possibility of updating fees, thus locking in tokenomics.
+    *
+    *
+    *function updateFee(
+    *    uint256 _txFee,
+    *    uint256 _burnFee,
+    *    uint256 _charityFee,
+    *    uint256 _marketingFee
+    *) public onlyOwner() {
+    *    _TAX_FEE = _txFee * 100;
+    *    _BURN_FEE = _burnFee * 100;
+    *    _CHARITY_FEE = _charityFee * 100;
+    *    _MARKETING_FEE = _marketingFee * 100;
 
-        ORIG_TAX_FEE = _TAX_FEE;
-        ORIG_BURN_FEE = _BURN_FEE;
-        ORIG_CHARITY_FEE = _CHARITY_FEE;
-        ORIG_MARKETING_FEE = _MARKETING_FEE;
-    }
+    *    ORIG_TAX_FEE = _TAX_FEE;
+    *    ORIG_BURN_FEE = _BURN_FEE;
+    *    ORIG_CHARITY_FEE = _CHARITY_FEE;
+    *    ORIG_MARKETING_FEE = _MARKETING_FEE;
+    *}
+    */
 
     function _burn(address _who, uint256 _value) internal {
         require(_value <= _rOwned[_who]);
