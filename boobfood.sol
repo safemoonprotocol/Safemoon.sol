@@ -521,7 +521,7 @@ contract Ownable is Context {
     }
 }
 
-contract TESTLINN10 is Context, IBEP20, Ownable {
+contract TESTLINN16 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -567,8 +567,7 @@ contract TESTLINN10 is Context, IBEP20, Ownable {
         uint256 _burnFee,
         uint256 _charityFee,
         address _FeeAddress,
-        address tokenOwner,
-        uint256 initialCharityPercent
+        address tokenOwner
     ) {
         _NAME = _name;
         _SYMBOL = _symbol;
@@ -587,22 +586,69 @@ contract TESTLINN10 is Context, IBEP20, Ownable {
         _owner = tokenOwner;
         _rOwned[tokenOwner] = _rTotal;
 
+        /*INITIALIZE ACCUMULATORS*/
+        _rTotal = 0;
+        _tFeeTotal = 0;
+        _tBurnTotal = 0;
+        _tCharityTotal = 0;
+
+        /*GET TOKEN SUPPLY TO OWNER WALLET*/
         _isExcluded[tokenOwner] = true;
         _excluded.push(tokenOwner);
+        emit Transfer(address(0), tokenOwner, _tTotal);
 
+        /*INITIAL CHARITY WALLET AMOUNT = 5%*/
         _isExcluded[_FeeAddress] = true;
         _excluded.push(_FeeAddress);
+        emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 5);
 
+        /*OPERATIONS WALLET*/
+        _isExcluded[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = true;
+        _excluded.push(0xe3da8b11C6e48344Af109537F1f6aDa6576e2363);
+
+        /*DEV1 WALLET AMOUNT*/
+        _isExcluded[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = true;
+        _excluded.push(0xB516442Cf1F32Ba701586b9b39d307D020Ab824C);
         emit Transfer(
-            address(0),
-            _FeeAddress,
-            _tTotal * (initialCharityPercent / 100)
+            tokenOwner,
+            0xB516442Cf1F32Ba701586b9b39d307D020Ab824C,
+            (_tTotal / 200)
         );
 
+        /*DEV2 WALLET AMOUNT*/
+        _isExcluded[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = true;
+        _excluded.push(0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20);
         emit Transfer(
-            address(0),
             tokenOwner,
-            _tTotal - _tTotal * (initialCharityPercent / 100)
+            0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20,
+            (_tTotal / 200)
+        );
+
+        /*DEV3 WALLET AMOUNT*/
+        _isExcluded[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = true;
+        _excluded.push(0x6712E35135Eb210271b8133c6fE0bcD10C2B1524);
+        emit Transfer(
+            tokenOwner,
+            0x6712E35135Eb210271b8133c6fE0bcD10C2B1524,
+            (_tTotal / 200)
+        );
+
+        /*DEV4 WALLET AMOUNT*/
+        _isExcluded[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = true;
+        _excluded.push(0xF7c162AC577576daAeEE201260356BAF9C91d9B3);
+        emit Transfer(
+            tokenOwner,
+            0xF7c162AC577576daAeEE201260356BAF9C91d9B3,
+            (_tTotal / 200)
+        );
+
+        /*DEV5 WALLET AMOUNT*/
+        _isExcluded[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = true;
+        _excluded.push(0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1);
+        emit Transfer(
+            tokenOwner,
+            0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1,
+            (_tTotal / 200)
         );
     }
 
@@ -623,10 +669,8 @@ contract TESTLINN10 is Context, IBEP20, Ownable {
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return _tOwned[account];
-
-        /* if (_isExcluded[account]) return _tOwned[account];
-        return tokenFromReflection(_rOwned[account]);*/
+        if (_isExcluded[account]) return _tOwned[account];
+        return tokenFromReflection(_rOwned[account]);
     }
 
     function transfer(address recipient, uint256 amount)
