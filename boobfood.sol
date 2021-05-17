@@ -521,7 +521,7 @@ contract Ownable is Context {
     }
 }
 
-contract TESTLINN04 is Context, IBEP20, Ownable {
+contract TESTLINN10 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -568,8 +568,7 @@ contract TESTLINN04 is Context, IBEP20, Ownable {
         uint256 _charityFee,
         address _FeeAddress,
         address tokenOwner,
-        address _liquidityLockAddress,
-        uint256 _liquidityLockPercentage
+        uint256 initialCharityPercent
     ) {
         _NAME = _name;
         _SYMBOL = _symbol;
@@ -594,19 +593,16 @@ contract TESTLINN04 is Context, IBEP20, Ownable {
         _isExcluded[_FeeAddress] = true;
         _excluded.push(_FeeAddress);
 
-        _isExcluded[_liquidityLockAddress] = true;
-        _excluded.push(_liquidityLockAddress);
-
         emit Transfer(
             address(0),
-            tokenOwner,
-            (_tTotal / 100) * _liquidityLockPercentage
+            _FeeAddress,
+            _tTotal * (initialCharityPercent / 100)
         );
 
         emit Transfer(
             address(0),
             tokenOwner,
-            _tTotal - (_tTotal / 100) * _liquidityLockPercentage
+            _tTotal - _tTotal * (initialCharityPercent / 100)
         );
     }
 
@@ -627,8 +623,10 @@ contract TESTLINN04 is Context, IBEP20, Ownable {
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        if (_isExcluded[account]) return _tOwned[account];
-        return tokenFromReflection(_rOwned[account]);
+        return _tOwned[account];
+
+        /* if (_isExcluded[account]) return _tOwned[account];
+        return tokenFromReflection(_rOwned[account]);*/
     }
 
     function transfer(address recipient, uint256 amount)
