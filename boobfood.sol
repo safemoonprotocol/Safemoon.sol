@@ -217,77 +217,6 @@ library Address {
     }
 }
 
-contract Ownable is Context {
-    address private _owner;
-    address private _previousOwner;
-    uint256 private _lockTime;
-
-    event OwnershipTransferred(
-        address indexed previousOwner,
-        address indexed newOwner
-    );
-
-    constructor() internal {
-        address msgSender = _msgSender();
-        _owner = msgSender;
-        emit OwnershipTransferred(address(0), msgSender);
-    }
-
-    function owner() public view returns (address) {
-        return _owner;
-    }
-
-    modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
-        _;
-    }
-
-    function renounceOwnership() public virtual onlyOwner {
-        emit OwnershipTransferred(_owner, address(0));
-        _owner = address(0);
-    }
-
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(
-            newOwner != address(0),
-            "Ownable: new owner is the zero address"
-        );
-        emit OwnershipTransferred(_owner, newOwner);
-        _owner = newOwner;
-    }
-
-    function getUnlockTime() public view returns (uint256) {
-        return _lockTime;
-    }
-
-    //Added function
-    // 1 minute = 60
-    // 1h 3600
-    // 24h 86400
-    // 1w 604800
-
-    function getTime() public view returns (uint256) {
-        return now;
-    }
-
-    function lock(uint256 time) public virtual onlyOwner {
-        _previousOwner = _owner;
-        _owner = address(0);
-        _lockTime = now + time;
-        emit OwnershipTransferred(_owner, address(0));
-    }
-
-    function unlock() public virtual {
-        require(
-            _previousOwner == msg.sender,
-            "You don't have permission to unlock"
-        );
-        require(now > _lockTime, "Contract is locked until 7 days");
-        emit OwnershipTransferred(_owner, _previousOwner);
-        _owner = _previousOwner;
-    }
-}
-
 // pragma solidity >=0.5.0;
 
 interface IUniswapV2Factory {
@@ -638,7 +567,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
     ) external;
 }
 
-contract BOOBFOODTOKEN is Context, IERC20, Ownable {
+contract TESTLINN03TOKEN is Context, IERC20 {
     using SafeMath for uint256;
     using Address for address;
 
@@ -651,17 +580,17 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
     mapping(address => bool) private _isExcluded;
     address[] private _excluded;
 
+    string private _name = "TESTLINN03";
+    string private _symbol = "TESTLINN03";
+    uint8 private _decimals = 3;
+
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1000000000 * 10**6 * 10**9;
+    uint256 private _tTotal = 10000000000 * _decimals;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tReflectionTotal;
     uint256 private _tMarketingTotal;
     uint256 private _tDonationTotal;
     uint256 private _tLiquidityTotal;
-
-    string private _name = "BOOBFOOD";
-    string private _symbol = "BOOBFOOD";
-    uint8 private _decimals = 3;
 
     uint256 public _reflectionFee = 2;
     uint256 private _previousReflectionFee = _reflectionFee;
@@ -675,22 +604,23 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
     uint256 public _liquidityFee = 4;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
-    uint256 public _maxTxAmount = 1000000000 * 10**6 * 10**9;
+    uint256 public _maxTxAmount = _tTotal.div(100);
     uint256 private minimumTokensBeforeSwap = 0 * 10**5 * 10**9;
 
     address payable public charityAddress =
         0x6C6Ad0AB710D0BA84EC037c425b92452616e8270; // Charity
     address payable public marketingAddress =
         0xe3da8b11C6e48344Af109537F1f6aDa6576e2363; // Marketing
+    address payable public ownerAddress =
+        0x7e59C0fa83120b040a03c3600cFd796E819BB276;
 
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
 
     bool inSwapAndLiquify;
-    bool public swapAndLiquifyEnabled = true;
 
     event RewardLiquidityProviders(uint256 tokenAmount);
-    event SwapAndLiquifyEnabledUpdated(bool enabled);
+
     event SwapAndLiquify(
         uint256 tokensSwapped,
         uint256 ethReceived,
@@ -704,7 +634,7 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
     }
 
     constructor() public {
-        _rOwned[_msgSender()] = _rTotal;
+        _rOwned[ownerAddress] = _rTotal;
 
         IUniswapV2Router02 _uniswapV2Router =
             IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
@@ -713,10 +643,16 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
 
         uniswapV2Router = _uniswapV2Router;
 
-        _isExcludedFromFee[owner()] = true;
+        _isExcludedFromFee[ownerAddress] = true;
         _isExcludedFromFee[address(this)] = true;
 
-        emit Transfer(address(0), _msgSender(), _tTotal);
+        _isExcluded[charityAddress] = true;
+        _excluded.push(charityAddress);
+
+        _isExcluded[marketingAddress] = true;
+        _excluded.push(marketingAddress);
+
+        emit Transfer(address(0), ownerAddress, _tTotal);
     }
 
     function name() public view returns (string memory) {
@@ -879,29 +815,6 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
         return rAmount.div(currentRate);
     }
 
-    function excludeFromReward(address account) public onlyOwner() {
-        // require(account != 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D, 'We can not exclude Uniswap router.');
-        require(!_isExcluded[account], "Account is already excluded");
-        if (_rOwned[account] > 0) {
-            _tOwned[account] = tokenFromReflection(_rOwned[account]);
-        }
-        _isExcluded[account] = true;
-        _excluded.push(account);
-    }
-
-    function includeInReward(address account) external onlyOwner() {
-        require(_isExcluded[account], "Account is already excluded");
-        for (uint256 i = 0; i < _excluded.length; i++) {
-            if (_excluded[i] == account) {
-                _excluded[i] = _excluded[_excluded.length - 1];
-                _tOwned[account] = 0;
-                _isExcluded[account] = false;
-                _excluded.pop();
-                break;
-            }
-        }
-    }
-
     function _approve(
         address owner,
         address spender,
@@ -922,7 +835,7 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
-        if (from != owner() && to != owner())
+        if (from != ownerAddress && to != ownerAddress)
             require(
                 amount <= _maxTxAmount,
                 "Transfer amount exceeds the maxTxAmount."
@@ -934,8 +847,7 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
         if (
             overMinimumTokenBalance &&
             !inSwapAndLiquify &&
-            from != uniswapV2Pair &&
-            swapAndLiquifyEnabled
+            from != uniswapV2Pair
         ) {
             contractTokenBalance = minimumTokensBeforeSwap;
             swapAndLiquify(contractTokenBalance);
@@ -981,7 +893,24 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
         uint256 amount,
         bool takeFee
     ) private {
-        if (!takeFee) removeAllFee();
+        if (!takeFee) {
+            if (
+                _reflectionFee != 0 ||
+                _marketingFee != 0 ||
+                _donationFee != 0 ||
+                _liquidityFee != 0
+            ) {
+                _previousReflectionFee = _reflectionFee;
+                _previousMarketingFee = _marketingFee;
+                _previousDonationFee = _donationFee;
+                _previousLiquidityFee = _liquidityFee;
+
+                _reflectionFee = 0;
+                _marketingFee = 0;
+                _donationFee = 0;
+                _liquidityFee = 0;
+            }
+        }
 
         if (_isExcluded[sender] && !_isExcluded[recipient]) {
             _transferFromExcluded(sender, recipient, amount);
@@ -995,7 +924,12 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
             _transferStandard(sender, recipient, amount);
         }
 
-        if (!takeFee) restoreAllFee();
+        if (!takeFee) {
+            _reflectionFee = _previousReflectionFee;
+            _marketingFee = _previousMarketingFee;
+            _donationFee = _previousDonationFee;
+            _liquidityFee = _previousLiquidityFee;
+        }
     }
 
     struct objTransactionValues {
@@ -1163,10 +1097,11 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
         view
         returns (TValues memory)
     {
-        uint256 tReflection = calculateReflectionFee(tAmount);
-        uint256 tMarketing = calculateBurnFee(tAmount);
-        uint256 tLiquidity = calculateLiquidityFee(tAmount);
-        uint256 tDonation = calculateDonationFee(tAmount);
+        uint256 tReflection = tAmount.mul(_reflectionFee).div(5**2);
+        uint256 tMarketing = tAmount.mul(_marketingFee).div(5**2);
+        uint256 tLiquidity = tAmount.mul(_liquidityFee).div(5**2);
+        uint256 tDonation = tAmount.mul(_donationFee).div(5**2);
+
         uint256 tTransferAmount =
             tAmount.sub(tReflection).sub(tMarketing).sub(tLiquidity).sub(
                 tDonation
@@ -1239,107 +1174,8 @@ contract BOOBFOODTOKEN is Context, IERC20, Ownable {
             _tOwned[address(this)] = _tOwned[address(this)].add(tLiquidity);
     }
 
-    function calculateReflectionFee(uint256 _amount)
-        private
-        view
-        returns (uint256)
-    {
-        return _amount.mul(_reflectionFee).div(5**2);
-    }
-
-    function calculateBurnFee(uint256 _amount) private view returns (uint256) {
-        return _amount.mul(_marketingFee).div(5**2);
-    }
-
-    function calculateLiquidityFee(uint256 _amount)
-        private
-        view
-        returns (uint256)
-    {
-        return _amount.mul(_liquidityFee).div(5**2);
-    }
-
-    function calculateDonationFee(uint256 _amount)
-        private
-        view
-        returns (uint256)
-    {
-        return _amount.mul(_donationFee).div(5**2);
-    }
-
-    function removeAllFee() private {
-        if (
-            _reflectionFee == 0 &&
-            _marketingFee == 0 &&
-            _donationFee == 0 &&
-            _liquidityFee == 0
-        ) return;
-
-        _previousReflectionFee = _reflectionFee;
-        _previousMarketingFee = _marketingFee;
-        _previousDonationFee = _donationFee;
-        _previousLiquidityFee = _liquidityFee;
-
-        _reflectionFee = 0;
-        _marketingFee = 0;
-        _donationFee = 0;
-        _liquidityFee = 0;
-    }
-
-    function restoreAllFee() private {
-        _reflectionFee = _previousReflectionFee;
-        _marketingFee = _previousMarketingFee;
-        _donationFee = _previousDonationFee;
-        _liquidityFee = _previousLiquidityFee;
-    }
-
     function isExcludedFromFee(address account) public view returns (bool) {
         return _isExcludedFromFee[account];
-    }
-
-    function excludeFromFee(address account) public onlyOwner {
-        _isExcludedFromFee[account] = true;
-    }
-
-    function includeInFee(address account) public onlyOwner {
-        _isExcludedFromFee[account] = false;
-    }
-
-    function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
-        _reflectionFee = taxFee;
-    }
-
-    function setMarketingFeePercent(uint256 marketingFee) external onlyOwner() {
-        _marketingFee = marketingFee;
-    }
-
-    function setDonationFeePercent(uint256 donationFee) external onlyOwner() {
-        _donationFee = donationFee;
-    }
-
-    function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
-        _liquidityFee = liquidityFee;
-    }
-
-    function setMaxTxPercent(uint256 maxTxPercent, uint256 maxTxDecimals)
-        external
-        onlyOwner()
-    {
-        _maxTxAmount = _tTotal.mul(maxTxPercent).div(
-            10**(uint256(maxTxDecimals) + 2)
-        );
-    }
-
-    function setNumTokensSellToAddToLiquidity(uint256 _minimumTokensBeforeSwap)
-        external
-        onlyOwner()
-    {
-        minimumTokensBeforeSwap = _minimumTokensBeforeSwap;
-    }
-
-    function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
-        swapAndLiquifyEnabled = _enabled;
-        emit SwapAndLiquifyEnabledUpdated(_enabled);
     }
 
     function TransferCharityETH(address payable recipient, uint256 amount)
