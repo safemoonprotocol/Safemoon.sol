@@ -521,7 +521,7 @@ contract Ownable is Context {
     }
 }
 
-contract LINNTEST001 is Context, IBEP20, Ownable {
+contract LINNTEST002 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -610,8 +610,8 @@ contract LINNTEST001 is Context, IBEP20, Ownable {
         _isCharity[_FeeAddress] = true;
         _isExcluded[_FeeAddress] = true;
         _excluded.push(_FeeAddress);
-        _rOwned[_FeeAddress] = (_tTotal / 100) * 5;
-        _tOwned[_FeeAddress] = (_tTotal / 100) * 5;
+        _rOwned[_FeeAddress] = (_tTotal / 100) * 4;
+        _tOwned[_FeeAddress] = (_tTotal / 100) * 4;
         emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 4);
 
         /*INITIAL OPERATIONS WALLET  1%*/
@@ -620,8 +620,8 @@ contract LINNTEST001 is Context, IBEP20, Ownable {
         ] = true;
         _isExcluded[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = true;
         _excluded.push(0xe3da8b11C6e48344Af109537F1f6aDa6576e2363);
-        _rOwned[_FeeAddress] = (_tTotal / 100);
-        _tOwned[_FeeAddress] = (_tTotal / 100);
+        _rOwned[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = (_tTotal / 100);
+        _tOwned[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = (_tTotal / 100);
         emit Transfer(
             tokenOwner,
             0xe3da8b11C6e48344Af109537F1f6aDa6576e2363,
