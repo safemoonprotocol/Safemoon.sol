@@ -1320,7 +1320,13 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
 
     function _getRate() private view returns (uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        uint256 rawRate = rSupply.div(tSupply);
+        uint256 rawRate;
+
+        if (tSupply == 0) {
+            rawRate = 1;
+        } else {
+            rawRate = rSupply.div(tSupply);
+        }
 
         if (rawRate == 0) {
             rawRate = 1;
