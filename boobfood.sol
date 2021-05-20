@@ -1,5 +1,5 @@
 /**
- *Submitted for verification at BscScan.com on
+ *Submitted for verification at BscScan.com on 2021-05-19
  */
 
 // SPDX-License-Identifier: MIT
@@ -14,7 +14,7 @@ www.boobfood.charity
 
 */
 
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.4;
 
 abstract contract Context {
     function _msgSender() internal view virtual returns (address payable) {
@@ -521,7 +521,7 @@ contract Ownable is Context {
     }
 }
 
-contract TESTLINN16 is Context, IBEP20, Ownable {
+contract TESTLINNX003 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -531,6 +531,8 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
 
     mapping(address => bool) private _isExcluded;
     mapping(address => bool) private _isCharity;
+    mapping(address => bool) private _isOperationsAndMarketing;
+    mapping(address => bool) private _isOwner;
     address[] private _excluded;
 
     string private _NAME;
@@ -544,19 +546,23 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
 
     uint256 private _tTotal;
     uint256 private _rTotal;
+    uint256 public mintedTokens;
 
     uint256 private _tFeeTotal;
     uint256 private _tBurnTotal;
     uint256 private _tCharityTotal;
 
-    uint256 public _TAX_FEE;
-    uint256 public _BURN_FEE;
-    uint256 public _CHARITY_FEE;
+    uint256 private _TAX_FEE;
+    uint256 private _BURN_FEE;
+    uint256 private _CHARITY_AND_OPERATIONS_FEE;
+
+    uint256 public _maxTxAmount;
+    uint256 public _maxTxAmountDivideTotalPer;
 
     // Track original fees to bypass fees for charity account
     uint256 private ORIG_TAX_FEE;
     uint256 private ORIG_BURN_FEE;
-    uint256 private ORIG_CHARITY_FEE;
+    uint256 private ORIG_CHARITY_AND_OPERATIONS_FEE;
 
     constructor(
         string memory _name,
@@ -567,89 +573,190 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
         uint256 _burnFee,
         uint256 _charityFee,
         address _FeeAddress,
-        address tokenOwner
+        address tokenOwner,
+        uint256 maxTxAmountDivideTotalPer
     ) {
         _NAME = _name;
         _SYMBOL = _symbol;
         _DECIMALS = _decimals;
         _DECIMALFACTOR = 10**uint256(_DECIMALS);
         _tTotal = _supply * _DECIMALFACTOR;
+        mintedTokens = _supply;
         _rTotal = (_MAX - (_MAX % _tTotal));
         _TAX_FEE = _txFee * 50;
         _BURN_FEE = _burnFee * 50;
-        _CHARITY_FEE = _charityFee * 50;
+        _CHARITY_AND_OPERATIONS_FEE = _charityFee * 50;
         ORIG_TAX_FEE = _TAX_FEE;
         ORIG_BURN_FEE = _BURN_FEE;
-        ORIG_CHARITY_FEE = _CHARITY_FEE;
-        _isCharity[_FeeAddress] = true;
+        ORIG_CHARITY_AND_OPERATIONS_FEE = _CHARITY_AND_OPERATIONS_FEE;
         FeeAddress = _FeeAddress;
         _owner = tokenOwner;
-        _rOwned[tokenOwner] = _rTotal;
+        _maxTxAmountDivideTotalPer = maxTxAmountDivideTotalPer;
+        _maxTxAmount = _tTotal / _maxTxAmountDivideTotalPer;
 
         /*INITIALIZE ACCUMULATORS*/
-        _rTotal = 0;
         _tFeeTotal = 0;
         _tBurnTotal = 0;
         _tCharityTotal = 0;
 
         /*GET TOKEN SUPPLY TO OWNER WALLET*/
+        _rOwned[tokenOwner] = _rTotal;
+        _tOwned[tokenOwner] = _tTotal;
         _isExcluded[tokenOwner] = true;
         _excluded.push(tokenOwner);
         emit Transfer(address(0), tokenOwner, _tTotal);
 
-        /*INITIAL CHARITY WALLET AMOUNT = 5%*/
+        /*INITIAL CHARITY WALLET 4%*/
+        _isCharity[_FeeAddress] = true;
         _isExcluded[_FeeAddress] = true;
         _excluded.push(_FeeAddress);
+        _rOwned[_FeeAddress] = (_tTotal / 100) * 5;
+        _tOwned[_FeeAddress] = (_tTotal / 100) * 5;
         emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 5);
 
-        /*OPERATIONS WALLET*/
+        /*INITIAL OPERATIONS WALLET  1%*/
+        _isOperationsAndMarketing[
+            0xe3da8b11C6e48344Af109537F1f6aDa6576e2363
+        ] = true;
         _isExcluded[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = true;
         _excluded.push(0xe3da8b11C6e48344Af109537F1f6aDa6576e2363);
+        _rOwned[_FeeAddress] = (_tTotal / 100);
+        _tOwned[_FeeAddress] = (_tTotal / 100);
+        emit Transfer(
+            tokenOwner,
+            0xe3da8b11C6e48344Af109537F1f6aDa6576e2363,
+            (_tTotal / 100)
+        );
 
-        /*DEV1 WALLET AMOUNT*/
+        /*DEV1 WALLET AMOUNT 0.5%*/
         _isExcluded[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = true;
         _excluded.push(0xB516442Cf1F32Ba701586b9b39d307D020Ab824C);
+        _rOwned[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = (_tTotal / 200);
+        _tOwned[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
             0xB516442Cf1F32Ba701586b9b39d307D020Ab824C,
             (_tTotal / 200)
         );
 
-        /*DEV2 WALLET AMOUNT*/
+        /*DEV2 WALLET AMOUNT  0.5%*/
         _isExcluded[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = true;
         _excluded.push(0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20);
+        _rOwned[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = (_tTotal / 200);
+        _tOwned[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
             0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20,
             (_tTotal / 200)
         );
 
-        /*DEV3 WALLET AMOUNT*/
+        /*DEV3 WALLET AMOUNT  0.5%*/
         _isExcluded[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = true;
         _excluded.push(0x6712E35135Eb210271b8133c6fE0bcD10C2B1524);
+        _rOwned[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = (_tTotal / 200);
+        _tOwned[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
             0x6712E35135Eb210271b8133c6fE0bcD10C2B1524,
             (_tTotal / 200)
         );
 
-        /*DEV4 WALLET AMOUNT*/
+        /*DEV4 WALLET AMOUNT  0.5%*/
         _isExcluded[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = true;
         _excluded.push(0xF7c162AC577576daAeEE201260356BAF9C91d9B3);
+        _rOwned[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = (_tTotal / 200);
+        _tOwned[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
             0xF7c162AC577576daAeEE201260356BAF9C91d9B3,
             (_tTotal / 200)
         );
 
-        /*DEV5 WALLET AMOUNT*/
+        /*DEV5 WALLET AMOUNT  0.5%*/
         _isExcluded[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = true;
         _excluded.push(0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1);
+        _rOwned[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = (_tTotal / 200);
+        _tOwned[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
             0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1,
             (_tTotal / 200)
         );
+
+        /*LIQUIDITY LOCK WALLET =  40%*/
+        _isExcluded[0x0217A97B42239783b8f99523cBB7a8E513799485] = true;
+        _excluded.push(0x0217A97B42239783b8f99523cBB7a8E513799485);
+        _rOwned[0x0217A97B42239783b8f99523cBB7a8E513799485] =
+            (_tTotal / 100) *
+            40;
+        _tOwned[0x0217A97B42239783b8f99523cBB7a8E513799485] =
+            (_tTotal / 100) *
+            40;
+        emit Transfer(
+            tokenOwner,
+            0x0217A97B42239783b8f99523cBB7a8E513799485,
+            (_tTotal / 100) * 40
+        );
+
+        /*PUBLIC PRESALE 1 WALLET  = 5%*/
+        _isExcluded[0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8] = true;
+        _excluded.push(0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8);
+        _rOwned[0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8] =
+            (_tTotal / 100) *
+            5;
+        _tOwned[0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8] =
+            (_tTotal / 100) *
+            5;
+        emit Transfer(
+            tokenOwner,
+            0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8,
+            (_tTotal / 100) * 5
+        );
+
+        /*PUBLIC PRESALE 2 WALLET  = 10%*/
+        _isExcluded[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = true;
+        _excluded.push(0xaad3D7e06f2b24b9275821b861F9402CB83Beb29);
+        _rOwned[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = (_tTotal / 10);
+        _tOwned[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = (_tTotal / 10);
+        emit Transfer(
+            tokenOwner,
+            0xaad3D7e06f2b24b9275821b861F9402CB83Beb29,
+            (_tTotal / 10)
+        );
+
+        /*PUBLIC PRESALE 3 WALLET  = 12.5%*/
+        _isExcluded[0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3] = true;
+        _excluded.push(0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3);
+        _rOwned[0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3] =
+            (_tTotal / 200) *
+            25;
+        _tOwned[0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3] =
+            (_tTotal / 200) *
+            25;
+        emit Transfer(
+            tokenOwner,
+            0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3,
+            (_tTotal / 200) * 25
+        );
+
+        /*PUBLIC PRESALE 4 WALLET  = 15%*/
+        _isExcluded[0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645] = true;
+        _excluded.push(0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645);
+        _rOwned[0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645] =
+            (_tTotal / 100) *
+            15;
+        _tOwned[0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645] =
+            (_tTotal / 100) *
+            15;
+        emit Transfer(
+            tokenOwner,
+            0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645,
+            (_tTotal / 100) * 15
+        );
+
+        /*OWNER NOW HAS 0% of SUPPLY*/
+        _rOwned[tokenOwner] = 0;
+        _tOwned[tokenOwner] = 0;
     }
 
     function name() public view returns (string memory) {
@@ -754,12 +861,36 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
         return _isCharity[account];
     }
 
-    function totalFees() public view returns (uint256) {
+    function isOperationsAndMarketing(address account)
+        public
+        view
+        returns (bool)
+    {
+        return _isOperationsAndMarketing[account];
+    }
+
+    function reflectionPerTxFee() public view returns (uint256) {
+        return _TAX_FEE;
+    }
+
+    function totalReflectionAwarded() public view returns (uint256) {
         return _tFeeTotal;
+    }
+
+    function getMaxTxAmountDivideTotalPer() public view returns (uint256) {
+        return _maxTxAmountDivideTotalPer;
+    }
+
+    function burnPerTxFee() public view returns (uint256) {
+        return _BURN_FEE;
     }
 
     function totalBurn() public view returns (uint256) {
         return _tBurnTotal;
+    }
+
+    function charityAndOperationsPerTxFee() public view returns (uint256) {
+        return _CHARITY_AND_OPERATIONS_FEE;
     }
 
     function totalCharity() public view returns (uint256) {
@@ -838,6 +969,8 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
         _burn(msg.sender, _value);
     }
 
+    /*
+    *OWNER RENOUNCES THE RIGHTS TO UPDATE FEES
     function updateFee(
         uint256 _txFee,
         uint256 _burnFee,
@@ -845,23 +978,19 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
     ) public onlyOwner() {
         _TAX_FEE = _txFee * 100;
         _BURN_FEE = _burnFee * 100;
-        _CHARITY_FEE = _charityFee * 100;
+        _CHARITY_AND_OPERATIONS_FEE = _charityFee * 100;
         ORIG_TAX_FEE = _TAX_FEE;
         ORIG_BURN_FEE = _BURN_FEE;
-        ORIG_CHARITY_FEE = _CHARITY_FEE;
+        ORIG_CHARITY_AND_OPERATIONS_FEE = _CHARITY_AND_OPERATIONS_FEE;
     }
+    */
 
     function _burn(address _who, uint256 _value) internal {
         require(_value <= _rOwned[_who]);
         _rOwned[_who] = _rOwned[_who].sub(_value);
         _tTotal = _tTotal.sub(_value);
+        _maxTxAmount = _tTotal / _maxTxAmountDivideTotalPer;
         emit Transfer(_who, address(0), _value);
-    }
-
-    function mint(address account, uint256 amount) public onlyOwner() {
-        _tTotal = _tTotal.add(amount);
-        _rOwned[account] = _rOwned[account].add(amount);
-        emit Transfer(address(0), account, amount);
     }
 
     function _approve(
@@ -890,10 +1019,15 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
             "TOKEN20: transfer to the zero address"
         );
         require(amount > 0, "Transfer amount must be greater than zero");
+        require(
+            _isOwner[sender] || amount <= _maxTxAmount,
+            "Transfer amount must be less than maxTxAmount"
+        );
 
         // Remove fees for transfers to and from charity account or to excluded account
         bool takeFee = true;
         if (
+            _isOwner[sender] ||
             _isCharity[sender] ||
             _isCharity[recipient] ||
             _isExcluded[recipient]
@@ -1107,7 +1241,12 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
         )
     {
         (uint256 tFee, uint256 tBurn, uint256 tCharity) =
-            _getTBasics(tAmount, _TAX_FEE, _BURN_FEE, _CHARITY_FEE);
+            _getTBasics(
+                tAmount,
+                _TAX_FEE,
+                _BURN_FEE,
+                _CHARITY_AND_OPERATIONS_FEE
+            );
         uint256 tTransferAmount =
             getTTransferAmount(tAmount, tFee, tBurn, tCharity);
         uint256 currentRate = _getRate();
@@ -1181,7 +1320,13 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
 
     function _getRate() private view returns (uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
-        return rSupply.div(tSupply);
+        uint256 rawRate = rSupply.div(tSupply);
+
+        if (rawRate == 0) {
+            rawRate = 1;
+        }
+
+        return rawRate;
     }
 
     function _getCurrentSupply() private view returns (uint256, uint256) {
@@ -1208,21 +1353,22 @@ contract TESTLINN16 is Context, IBEP20, Ownable {
     }
 
     function removeAllFee() private {
-        if (_TAX_FEE == 0 && _BURN_FEE == 0 && _CHARITY_FEE == 0) return;
+        if (_TAX_FEE == 0 && _BURN_FEE == 0 && _CHARITY_AND_OPERATIONS_FEE == 0)
+            return;
 
         ORIG_TAX_FEE = _TAX_FEE;
         ORIG_BURN_FEE = _BURN_FEE;
-        ORIG_CHARITY_FEE = _CHARITY_FEE;
+        ORIG_CHARITY_AND_OPERATIONS_FEE = _CHARITY_AND_OPERATIONS_FEE;
 
         _TAX_FEE = 0;
         _BURN_FEE = 0;
-        _CHARITY_FEE = 0;
+        _CHARITY_AND_OPERATIONS_FEE = 0;
     }
 
     function restoreAllFee() private {
         _TAX_FEE = ORIG_TAX_FEE;
         _BURN_FEE = ORIG_BURN_FEE;
-        _CHARITY_FEE = ORIG_CHARITY_FEE;
+        _CHARITY_AND_OPERATIONS_FEE = ORIG_CHARITY_AND_OPERATIONS_FEE;
     }
 
     function _getTaxFee() private view returns (uint256) {
