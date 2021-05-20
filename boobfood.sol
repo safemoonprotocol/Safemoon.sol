@@ -521,7 +521,7 @@ contract Ownable is Context {
     }
 }
 
-contract TESTLINNX003 is Context, IBEP20, Ownable {
+contract LINNTEST001 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -612,7 +612,7 @@ contract TESTLINNX003 is Context, IBEP20, Ownable {
         _excluded.push(_FeeAddress);
         _rOwned[_FeeAddress] = (_tTotal / 100) * 5;
         _tOwned[_FeeAddress] = (_tTotal / 100) * 5;
-        emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 5);
+        emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 4);
 
         /*INITIAL OPERATIONS WALLET  1%*/
         _isOperationsAndMarketing[
@@ -754,9 +754,9 @@ contract TESTLINNX003 is Context, IBEP20, Ownable {
             (_tTotal / 100) * 15
         );
 
-        /*OWNER NOW HAS 0% of SUPPLY*/
-        _rOwned[tokenOwner] = 0;
-        _tOwned[tokenOwner] = 0;
+        /*OWNER NOW HAS 10% of SUPPLY*/
+        _rOwned[tokenOwner] = (_tTotal / 10);
+        _tOwned[tokenOwner] = (_tTotal / 10);
     }
 
     function name() public view returns (string memory) {
