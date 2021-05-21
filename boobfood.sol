@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at BscScan.com on 2021-05-19
- */
-
 // SPDX-License-Identifier: MIT
 
 /*
@@ -521,7 +517,7 @@ contract Ownable is Context {
     }
 }
 
-contract LINNTEST002 is Context, IBEP20, Ownable {
+contract LINNTEST52 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -574,7 +570,7 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 _charityFee,
         address _FeeAddress,
         address tokenOwner,
-        uint256 maxTxAmountDivideTotalPer
+        uint256 paramMaxTxAmountDivideTotalPer
     ) {
         _NAME = _name;
         _SYMBOL = _symbol;
@@ -591,15 +587,16 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         ORIG_CHARITY_AND_OPERATIONS_FEE = _CHARITY_AND_OPERATIONS_FEE;
         FeeAddress = _FeeAddress;
         _owner = tokenOwner;
-        _maxTxAmountDivideTotalPer = maxTxAmountDivideTotalPer;
+        _maxTxAmountDivideTotalPer = paramMaxTxAmountDivideTotalPer;
         _maxTxAmount = _tTotal / _maxTxAmountDivideTotalPer;
+        uint256 currentRate = _getRate();
 
         /*INITIALIZE ACCUMULATORS*/
         _tFeeTotal = 0;
         _tBurnTotal = 0;
         _tCharityTotal = 0;
 
-        /*GET TOKEN SUPPLY TO OWNER WALLET*/
+        /*GET TOKEN SUPPLY TO OWNER WALLET = 100%*/
         _rOwned[tokenOwner] = _rTotal;
         _tOwned[tokenOwner] = _tTotal;
         _isExcluded[tokenOwner] = true;
@@ -610,7 +607,7 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _isCharity[_FeeAddress] = true;
         _isExcluded[_FeeAddress] = true;
         _excluded.push(_FeeAddress);
-        _rOwned[_FeeAddress] = (_tTotal / 100) * 4;
+        _rOwned[_FeeAddress] = (_tTotal / 100) * currentRate * 4;
         _tOwned[_FeeAddress] = (_tTotal / 100) * 4;
         emit Transfer(tokenOwner, _FeeAddress, (_tTotal / 100) * 4);
 
@@ -620,7 +617,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         ] = true;
         _isExcluded[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = true;
         _excluded.push(0xe3da8b11C6e48344Af109537F1f6aDa6576e2363);
-        _rOwned[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = (_tTotal / 100);
+        _rOwned[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] =
+            (_tTotal / 100) *
+            currentRate;
         _tOwned[0xe3da8b11C6e48344Af109537F1f6aDa6576e2363] = (_tTotal / 100);
         emit Transfer(
             tokenOwner,
@@ -631,7 +630,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*DEV1 WALLET AMOUNT 0.5%*/
         _isExcluded[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = true;
         _excluded.push(0xB516442Cf1F32Ba701586b9b39d307D020Ab824C);
-        _rOwned[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = (_tTotal / 200);
+        _rOwned[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] =
+            (_tTotal / 200) *
+            currentRate;
         _tOwned[0xB516442Cf1F32Ba701586b9b39d307D020Ab824C] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
@@ -642,7 +643,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*DEV2 WALLET AMOUNT  0.5%*/
         _isExcluded[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = true;
         _excluded.push(0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20);
-        _rOwned[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = (_tTotal / 200);
+        _rOwned[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] =
+            (_tTotal / 200) *
+            currentRate;
         _tOwned[0xB83b167245E04A5D6168F6b2e55e33e3CA09CC20] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
@@ -653,7 +656,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*DEV3 WALLET AMOUNT  0.5%*/
         _isExcluded[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = true;
         _excluded.push(0x6712E35135Eb210271b8133c6fE0bcD10C2B1524);
-        _rOwned[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = (_tTotal / 200);
+        _rOwned[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] =
+            (_tTotal / 200) *
+            currentRate;
         _tOwned[0x6712E35135Eb210271b8133c6fE0bcD10C2B1524] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
@@ -664,7 +669,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*DEV4 WALLET AMOUNT  0.5%*/
         _isExcluded[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = true;
         _excluded.push(0xF7c162AC577576daAeEE201260356BAF9C91d9B3);
-        _rOwned[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = (_tTotal / 200);
+        _rOwned[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] =
+            (_tTotal / 200) *
+            currentRate;
         _tOwned[0xF7c162AC577576daAeEE201260356BAF9C91d9B3] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
@@ -675,7 +682,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*DEV5 WALLET AMOUNT  0.5%*/
         _isExcluded[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = true;
         _excluded.push(0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1);
-        _rOwned[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = (_tTotal / 200);
+        _rOwned[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] =
+            (_tTotal / 200) *
+            currentRate;
         _tOwned[0xC3D82dCf66Cc51866D17bdF1e280DEE652B6CDe1] = (_tTotal / 200);
         emit Transfer(
             tokenOwner,
@@ -688,7 +697,8 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _excluded.push(0x0217A97B42239783b8f99523cBB7a8E513799485);
         _rOwned[0x0217A97B42239783b8f99523cBB7a8E513799485] =
             (_tTotal / 100) *
-            40;
+            40 *
+            currentRate;
         _tOwned[0x0217A97B42239783b8f99523cBB7a8E513799485] =
             (_tTotal / 100) *
             40;
@@ -703,7 +713,8 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _excluded.push(0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8);
         _rOwned[0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8] =
             (_tTotal / 100) *
-            5;
+            5 *
+            currentRate;
         _tOwned[0x145FC1641E740d3AB20C4fb8D5bD981eaE1bADA8] =
             (_tTotal / 100) *
             5;
@@ -716,7 +727,9 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         /*PUBLIC PRESALE 2 WALLET  = 10%*/
         _isExcluded[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = true;
         _excluded.push(0xaad3D7e06f2b24b9275821b861F9402CB83Beb29);
-        _rOwned[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = (_tTotal / 10);
+        _rOwned[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] =
+            (_tTotal / 10) *
+            currentRate;
         _tOwned[0xaad3D7e06f2b24b9275821b861F9402CB83Beb29] = (_tTotal / 10);
         emit Transfer(
             tokenOwner,
@@ -729,7 +742,8 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _excluded.push(0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3);
         _rOwned[0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3] =
             (_tTotal / 200) *
-            25;
+            25 *
+            currentRate;
         _tOwned[0x30190c9d55ABD95C7Bd394BA7BE98AE4d416F0e3] =
             (_tTotal / 200) *
             25;
@@ -744,7 +758,8 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _excluded.push(0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645);
         _rOwned[0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645] =
             (_tTotal / 100) *
-            15;
+            15 *
+            currentRate;
         _tOwned[0x4e3187312c9867D19CDf9c5F1a86AC7CF3f81645] =
             (_tTotal / 100) *
             15;
@@ -755,7 +770,7 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         );
 
         /*OWNER NOW HAS 10% of SUPPLY*/
-        _rOwned[tokenOwner] = (_tTotal / 10);
+        _rOwned[tokenOwner] = (_tTotal / 10) * currentRate;
         _tOwned[tokenOwner] = (_tTotal / 10);
     }
 
@@ -778,6 +793,14 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
     function balanceOf(address account) public view override returns (uint256) {
         if (_isExcluded[account]) return _tOwned[account];
         return tokenFromReflection(_rOwned[account]);
+    }
+
+    function balanceOfT(address account) public view returns (uint256) {
+        return _tOwned[account];
+    }
+
+    function balanceOfR(address account) public view returns (uint256) {
+        return _rOwned[account];
     }
 
     function transfer(address recipient, uint256 amount)
@@ -857,6 +880,10 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         return _isExcluded[account];
     }
 
+    function tokens(address account) public view returns (bool) {
+        return _isExcluded[account];
+    }
+
     function isCharity(address account) public view returns (bool) {
         return _isCharity[account];
     }
@@ -904,8 +931,14 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
             "Excluded addresses cannot call this function"
         );
         (uint256 rAmount, , , , , , ) = _getValues(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _rTotal = _rTotal.sub(rAmount);
+        _rOwned[sender] = _rOwned[sender].sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: deliver"
+        );
+        _rTotal = _rTotal.sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: deliver2"
+        );
         _tFeeTotal = _tFeeTotal.add(tAmount);
     }
 
@@ -934,7 +967,11 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
             "Amount must be less than total reflections"
         );
         uint256 currentRate = _getRate();
-        return rAmount.div(currentRate);
+        return
+            rAmount.div(
+                currentRate,
+                "SafeMath: division by zero. Called from tokenFromReflection"
+            );
     }
 
     function excludeAccount(address account) external onlyOwner() {
@@ -969,26 +1006,16 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         _burn(msg.sender, _value);
     }
 
-    /*
-    *OWNER RENOUNCES THE RIGHTS TO UPDATE FEES
-    function updateFee(
-        uint256 _txFee,
-        uint256 _burnFee,
-        uint256 _charityFee
-    ) public onlyOwner() {
-        _TAX_FEE = _txFee * 100;
-        _BURN_FEE = _burnFee * 100;
-        _CHARITY_AND_OPERATIONS_FEE = _charityFee * 100;
-        ORIG_TAX_FEE = _TAX_FEE;
-        ORIG_BURN_FEE = _BURN_FEE;
-        ORIG_CHARITY_AND_OPERATIONS_FEE = _CHARITY_AND_OPERATIONS_FEE;
-    }
-    */
-
     function _burn(address _who, uint256 _value) internal {
         require(_value <= _rOwned[_who]);
-        _rOwned[_who] = _rOwned[_who].sub(_value);
-        _tTotal = _tTotal.sub(_value);
+        _rOwned[_who] = _rOwned[_who].sub(
+            _value,
+            "SafeMath: subtraction overflow. Call from: _burn"
+        );
+        _tTotal = _tTotal.sub(
+            _value,
+            "SafeMath: subtraction overflow. Call from: _burn2"
+        );
         _maxTxAmount = _tTotal / _maxTxAmountDivideTotalPer;
         emit Transfer(_who, address(0), _value);
     }
@@ -1081,7 +1108,10 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 rAmount,
         uint256 rTransferAmount
     ) private {
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
+        _rOwned[sender] = _rOwned[sender].sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: _standardTransferContent"
+        );
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
     }
 
@@ -1121,7 +1151,10 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 rAmount,
         uint256 rTransferAmount
     ) private {
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
+        _rOwned[sender] = _rOwned[sender].sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: _excludedFromTransferContent"
+        );
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
     }
@@ -1162,8 +1195,14 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 rAmount,
         uint256 rTransferAmount
     ) private {
-        _tOwned[sender] = _tOwned[sender].sub(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
+        _tOwned[sender] = _tOwned[sender].sub(
+            tAmount,
+            "SafeMath: subtraction overflow. Call from: _excludedToTransferContent"
+        );
+        _rOwned[sender] = _rOwned[sender].sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: _excludedToTransferContent2"
+        );
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
     }
 
@@ -1205,8 +1244,14 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 tTransferAmount,
         uint256 rTransferAmount
     ) private {
-        _tOwned[sender] = _tOwned[sender].sub(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
+        _tOwned[sender] = _tOwned[sender].sub(
+            tAmount,
+            "SafeMath: subtraction overflow. Call from: _bothTransferContent"
+        );
+        _rOwned[sender] = _rOwned[sender].sub(
+            rAmount,
+            "SafeMath: subtraction overflow. Call from: _bothTransferContent2"
+        );
         _tOwned[recipient] = _tOwned[recipient].add(tTransferAmount);
         _rOwned[recipient] = _rOwned[recipient].add(rTransferAmount);
     }
@@ -1219,11 +1264,26 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 tBurn,
         uint256 tCharity
     ) private {
-        _rTotal = _rTotal.sub(rFee).sub(rBurn).sub(rCharity);
+        _rTotal = _rTotal
+            .sub(
+            rFee,
+            "SafeMath: subtraction overflow. Call from: _reflectFee11"
+        )
+            .sub(
+            rBurn,
+            "SafeMath: subtraction overflow. Call from: _reflectFee12"
+        )
+            .sub(
+            rCharity,
+            "SafeMath: subtraction overflow. Call from: _reflectFee13"
+        );
         _tFeeTotal = _tFeeTotal.add(tFee);
         _tBurnTotal = _tBurnTotal.add(tBurn);
         _tCharityTotal = _tCharityTotal.add(tCharity);
-        _tTotal = _tTotal.sub(tBurn);
+        _tTotal = _tTotal.sub(
+            tBurn,
+            "SafeMath: subtraction overflow. Call from: _reflectFee2"
+        );
         emit Transfer(address(this), address(0), tBurn);
     }
 
@@ -1292,7 +1352,20 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
         uint256 tBurn,
         uint256 tCharity
     ) private pure returns (uint256) {
-        return tAmount.sub(tFee).sub(tBurn).sub(tCharity);
+        return
+            tAmount
+                .sub(
+                tFee,
+                "SafeMath: subtraction overflow. Call from: getTTransferAmount0"
+            )
+                .sub(
+                tBurn,
+                "SafeMath: subtraction overflow. Call from: getTTransferAmount"
+            )
+                .sub(
+                tCharity,
+                "SafeMath: subtraction overflow. Call from: getTTransferAmount2"
+            );
     }
 
     function _getRBasics(
@@ -1314,11 +1387,24 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
     ) private pure returns (uint256) {
         uint256 rBurn = tBurn.mul(currentRate);
         uint256 rCharity = tCharity.mul(currentRate);
-        uint256 rTransferAmount = rAmount.sub(rFee).sub(rBurn).sub(rCharity);
+        uint256 temprTransferAmount =
+            rAmount.sub(
+                rFee,
+                "SafeMath: subtraction overflow. Call from: _getRTransferAmount"
+            );
+        temprTransferAmount = rAmount.sub(
+            rBurn,
+            "SafeMath: subtraction overflow. Call from: _getRTransferAmount2"
+        );
+        temprTransferAmount = rAmount.sub(
+            rCharity,
+            "SafeMath: subtraction overflow. Call from: _getRTransferAmount3"
+        );
+        uint256 rTransferAmount = temprTransferAmount;
         return rTransferAmount;
     }
 
-    function _getRate() private view returns (uint256) {
+    function _getRate() public view returns (uint256) {
         (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
         uint256 rawRate;
 
@@ -1343,8 +1429,14 @@ contract LINNTEST002 is Context, IBEP20, Ownable {
                 _rOwned[_excluded[i]] > rSupply ||
                 _tOwned[_excluded[i]] > tSupply
             ) return (_rTotal, _tTotal);
-            rSupply = rSupply.sub(_rOwned[_excluded[i]]);
-            tSupply = tSupply.sub(_tOwned[_excluded[i]]);
+            rSupply = rSupply.sub(
+                _rOwned[_excluded[i]],
+                "SafeMath: subtraction overflow. Call from: _getCurrentSupply"
+            );
+            tSupply = tSupply.sub(
+                _tOwned[_excluded[i]],
+                "SafeMath: subtraction overflow. Call from: _getCurrentSupply2"
+            );
         }
         if (rSupply < _rTotal.div(_tTotal)) return (_rTotal, _tTotal);
         return (rSupply, tSupply);
