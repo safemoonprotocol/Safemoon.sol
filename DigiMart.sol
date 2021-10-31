@@ -701,7 +701,7 @@ interface IUniswapV2Router02 is IUniswapV2Router01 {
 }
 
 
-contract DigiMart is Context, IERC20, Ownable {
+contract SafeMoon is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -719,9 +719,9 @@ contract DigiMart is Context, IERC20, Ownable {
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
-    string private _name = "DigiMart";
-    string private _symbol = "DMART";
-    uint8 private _decimals = 18;
+    string private _name = "SafeMoon";
+    string private _symbol = "SAFEMOON";
+    uint8 private _decimals = 9;
     
     uint256 public _taxFee = 5;
     uint256 private _previousTaxFee = _taxFee;
